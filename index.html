@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="RoK Rechner"/>
+<meta name="theme-color" content="#ffffff"/>
+<link rel="manifest" href="manifest.json"/>
+<title>RoK Kommandant-Rechner · ☁️ Cloud-Sync-Variante</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f0f4f8;color:#1e293b;-webkit-tap-highlight-color:transparent;}
+button{cursor:pointer;font-family:inherit;-webkit-appearance:none;}
+input,select{font-family:inherit;-webkit-appearance:none;}
+input[type=number]::-webkit-inner-spin-button{opacity:1;}
+.scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+@media(max-width:500px){.grid3{grid-template-columns:1fr 1fr;}}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:#fff;border-radius:16px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#15803d;color:#fff;padding:12px 24px;border-radius:99px;font-size:14px;font-weight:700;z-index:300;box-shadow:0 4px 20px rgba(0,0,0,.25);}
+</style>
+</head>
+<body>
+<div id="root"><div style="display:flex;align-items:center;justify-content:center;height:100vh;font-size:16px;color:#475569;">Wird geladen… / Loading…</div></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script>
+"use strict";
+var _h=React.createElement;
+var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useRef=React.useRef;
+
+// ═══════════════════════════════════════════════
+// i18n – Übersetzungen / Translations
+// ═══════════════════════════════════════════════
+var TXT={
+  de:{
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 2.5",
+    nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
+    univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
+    btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
+    tabs:{kommandanten:"👤 Kommandanten",strategie:"🎯 Strategie",truppentypen:"⚔️ Truppentypen",wochenplan:"📅 Wochenplan",glossar:"📖 Glossar"},
+    hintK:"So geht's: Tippe auf einen Kommandanten, den du besitzt. Dann Level, Sterne und Skulpturen eingeben. Danach im Tab Strategie ein Ziel setzen.",
+    tier:"Tier",ausgew:"ausgewählt",besitz:"✓ Besitz",alsZiel:"Als Ziel",ziel:"✓ Ziel",
+    level:"Level (1–60)",sternLevel:"Stern-Level",skulpturen:"Skulpturen",
+    paketBald:"⚡ {n} Level bis Paket!",paketBei:"📦 Paket bei Lv {n}",bereit:"✓ Bereit!",bis:"−{n} bis {s}",
+    zielWaehlen:"Zielkommandant wählen",bitteAusw:"Bitte zuerst Kommandanten im Tab Kommandanten auswählen.",
+    waehleZiel:"Wähle oben einen Zielkommandanten aus.",
+    zielkomm:"Zielkommandant",gesamtfort:"Gesamtfortschritt",
+    expBaende:"EXP-Bände",sterne:"Sterne",metaInfo:"Meta-Info: ",
+    aktionsplan:"Aktionsplan",vollstaendig:"🎉 Vollständig entwickelt!",
+    empfPartner:"Empfohlene Paarungspartner",mind3:"⚠ Mind. 3★!",einsatzbereit:"✓ Einsatzbereit",nichtSamml:"✗ Noch nicht in deiner Sammlung",
+    paketOpt:"Paket-Optimierer",paketInfo:"Bringe diese Kommandanten auf das Level → Paket freischalten → Skulpturen für {name}.",
+    expBandeNeed:"EXP-Bände",skulpFor:"Skulpturen",
+    welcheTrup:"Welche Truppen willst du hauptsächlich einsetzen?",
+    trupSub:"Wähle deinen Truppentyp – die App zeigt das optimale Paar, die Entwicklungsreihenfolge und alle passenden Kommandanten.",
+    ausgewaehlt:"✓ Ausgewählt",tippeWaehlen:"Tippe zum Wählen",
+    stark:"Stark",schwach:"Schwach",talentFokus:"Talent-Fokus: ",
+    metaHaupt:"Meta-Hauptpaar",primaer:"Primär",sekundaer:"Sekundär",warumPaar:"Warum dieses Paar? ",
+    altPaar:"Alternative Paarungen",entwReihen:"Entwicklungsreihenfolge",
+    entwInfo:"In dieser Reihenfolge entwickeln für eine starke {name}-Strategie:",fehlt:"Fehlt",
+    deineKomm:"Deine {name}-Kommandanten",tippsFor:"Tipps für {name}",
+    wocheUebersicht:"Ø Skulpturen",woche:"Woche",
+    gesamt169:"📊 Ca. 169 Legendäre Skulpturen in 4 Wochen ohne Käufe",
+    glossarTitel:"Alle Begriffe für Einsteiger – einfach erklärt",glossarSub:"Icons entsprechen den RoK-Symbolen im Spiel.",
+    eiTitel:"🔄 Export / Import",
+    eiInfo:"Export-Text kopieren → per Nachricht an anderes Gerät senden → dort importieren.",
+    eiExport:"📤 Exportieren:",eiCopy:"📋 In Zwischenablage kopieren",eiImport:"📥 Importieren:",
+    eiPaste:"Export-Text einfügen…",eiBtn:"📥 Importieren",eiClose:"Schließen",
+    eiCopied:"✓ Kopiert! Auf dem anderen Gerät 'Importieren' wählen.",eiInvalid:"Ungültige Daten.",
+    savedToast:"✓ Gespeichert!",
+    cloudBtn:"☁️ Cloud-Sync",cloudBadge:"☁️ Cloud-Sync-Variante",cloudTitel:"☁️ Cloud-Synchronisation",cloudInfo:"Synchronisiere denselben Datenstand über alle Geräte – über dein eigenes kostenloses Backend. Daten bleiben zusätzlich lokal gespeichert (offline nutzbar).",cloudProvider:"Anbieter wählen:",cloudUrlSb:"Supabase Projekt-URL (https://xxxxx.supabase.co)",cloudKeySb:"Supabase anon public Key",cloudUrlFb:"Firebase Realtime-DB URL (https://xxxxx.firebaseio.com)",cloudSync:"Sync-Code (frei wählbar, auf allen Geräten gleich)",cloudConnUp:"Verbinden & Hochladen",cloudConnDown:"Verbinden & Herunterladen",cloudDisc:"Verbindung trennen",cloudConnected:"✓ Verbunden",cloudUploaded:"✓ Hochgeladen",cloudDownloaded:"✓ Heruntergeladen",cloudErr:"⚠ Fehler – Eingaben/Backend prüfen",cloudNoData:"Keine Cloud-Daten unter diesem Sync-Code gefunden.",cloudSetup:"▸ Einrichtung anzeigen (einmalig)",cloudSetupSb:"Supabase: 1) Konto auf supabase.com · 2) Neues Projekt · 3) SQL-Editor → Tabelle anlegen (SQL unten) · 4) Settings → API → Project URL und anon public key kopieren.",cloudSql:"create table rok_sync (id text primary key, data jsonb, updated_at timestamptz); alter table rok_sync enable row level security; create policy p on rok_sync for all using (true) with check (true);",cloudSetupFb:"Firebase: 1) Konto auf firebase.google.com · 2) Projekt anlegen · 3) Realtime Database erstellen · 4) Regeln auf {\".read\":true,\".write\":true} (nur für privaten Test) · 5) Datenbank-URL kopieren.",cloudWarn:"Hinweis: Mit offenen Regeln kann jeder mit Sync-Code + URL zugreifen. Für privaten Gebrauch ok; sonst Zugriffsregeln einschränken.",
+    sternBez:["1★","2★","3★","4★","5★","Exp 1","Exp 2","Exp 3","Exp 4","Meister"],
+    wochenplan:[
+      {w:1,c:"#d97706",b:"Mightiest Governor – Phase 1",ev:[{n:"Mightiest Governor",s:25,t:"Power durch Bauen/Forschen. Erst beim Event-Start freischalten!"},{n:"Allianz-Events",s:8,t:"Truhen öffnen, Hilfen geben."},{n:"Tägliche Aufgaben & VIP",s:4,t:"Täglich erledigen."}]},
+      {w:2,c:"#1d4ed8",b:"Ceroli Crisis + Arche des Osiris",ev:[{n:"Ceroli Crisis",s:15,t:"Alle 5 Phasen abschließen."},{n:"Arche des Osiris",s:12,t:"Alle 3 Phasen mitspielen."},{n:"Allianz + Täglich",s:12,t:"Beiträge und Aufgaben."}]},
+      {w:3,c:"#7c3aed",b:"MG Phase 2 + KvK-Events",ev:[{n:"KvK / Golden Age",s:30,t:"Kills → Meilensteinbelohnungen. Allianz koordinieren!"},{n:"MG Phase 2",s:15,t:"KvK-Meilensteine abschließen."},{n:"Allianz + Täglich",s:12,t:"Aktiv bleiben."}]},
+      {w:4,c:"#15803d",b:"Saisonpass + Arche des Osiris",ev:[{n:"Saisonpass",s:20,t:"Bestes Preis-Leistungs-Verhältnis."},{n:"Arche des Osiris",s:12,t:"Zweite Runde."},{n:"Allianz + Täglich",s:12,t:"Kisten öffnen."}]}
+    ]
+  },
+  en:{
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 2.5",
+    nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
+    univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
+    btnSave:"💾 Save",btnEI:"🔄 Export / Import",
+    tabs:{kommandanten:"👤 Commanders",strategie:"🎯 Strategy",truppentypen:"⚔️ Troop Types",wochenplan:"📅 Weekly Plan",glossar:"📖 Glossary"},
+    hintK:"How it works: Tap a commander you own. Then enter level, stars and sculptures. Afterwards set a target in the Strategy tab.",
+    tier:"Tier",ausgew:"selected",besitz:"✓ Owned",alsZiel:"Set target",ziel:"✓ Target",
+    level:"Level (1–60)",sternLevel:"Star level",skulpturen:"Sculptures",
+    paketBald:"⚡ {n} levels to bundle!",paketBei:"📦 Bundle at Lv {n}",bereit:"✓ Ready!",bis:"−{n} to {s}",
+    zielWaehlen:"Choose target commander",bitteAusw:"Please select commanders in the Commanders tab first.",
+    waehleZiel:"Choose a target commander above.",
+    zielkomm:"Target commander",gesamtfort:"Overall progress",
+    expBaende:"XP tomes",sterne:"Stars",metaInfo:"Meta info: ",
+    aktionsplan:"Action plan",vollstaendig:"🎉 Fully developed!",
+    empfPartner:"Recommended pairing partners",mind3:"⚠ Min. 3★!",einsatzbereit:"✓ Ready",nichtSamml:"✗ Not yet in your collection",
+    paketOpt:"Bundle optimizer",paketInfo:"Bring these commanders to the level → unlock bundle → sculptures for {name}.",
+    expBandeNeed:"XP tomes",skulpFor:"sculptures",
+    welcheTrup:"Which troops do you mainly want to use?",
+    trupSub:"Choose your troop type – the app shows the optimal pair, development order and all matching commanders.",
+    ausgewaehlt:"✓ Selected",tippeWaehlen:"Tap to choose",
+    stark:"Strong",schwach:"Weak",talentFokus:"Talent focus: ",
+    metaHaupt:"Meta main pair",primaer:"Primary",sekundaer:"Secondary",warumPaar:"Why this pair? ",
+    altPaar:"Alternative pairings",entwReihen:"Development order",
+    entwInfo:"Develop in this order for a strong {name} strategy:",fehlt:"Missing",
+    deineKomm:"Your {name} commanders",tippsFor:"Tips for {name}",
+    wocheUebersicht:"avg sculptures",woche:"Week",
+    gesamt169:"📊 Approx. 169 legendary sculptures in 4 weeks without purchases",
+    glossarTitel:"All terms explained simply for beginners",glossarSub:"Icons match the in-game RoK symbols.",
+    eiTitel:"🔄 Export / Import",
+    eiInfo:"Copy export text → send to other device → import there.",
+    eiExport:"📤 Export:",eiCopy:"📋 Copy to clipboard",eiImport:"📥 Import:",
+    eiPaste:"Paste export text…",eiBtn:"📥 Import",eiClose:"Close",
+    eiCopied:"✓ Copied! Choose 'Import' on the other device.",eiInvalid:"Invalid data.",
+    savedToast:"✓ Saved!",
+    cloudBtn:"☁️ Cloud Sync",cloudBadge:"☁️ Cloud Sync Edition",cloudTitel:"☁️ Cloud Synchronisation",cloudInfo:"Sync the same data across all devices – via your own free backend. Data is also stored locally (works offline).",cloudProvider:"Choose provider:",cloudUrlSb:"Supabase project URL (https://xxxxx.supabase.co)",cloudKeySb:"Supabase anon public key",cloudUrlFb:"Firebase Realtime DB URL (https://xxxxx.firebaseio.com)",cloudSync:"Sync code (free choice, same on all devices)",cloudConnUp:"Connect & Upload",cloudConnDown:"Connect & Download",cloudDisc:"Disconnect",cloudConnected:"✓ Connected",cloudUploaded:"✓ Uploaded",cloudDownloaded:"✓ Downloaded",cloudErr:"⚠ Error – check inputs/backend",cloudNoData:"No cloud data found for this sync code.",cloudSetup:"▸ Show setup (one-time)",cloudSetupSb:"Supabase: 1) Account at supabase.com · 2) New project · 3) SQL editor → create table (SQL below) · 4) Settings → API → copy Project URL and anon public key.",cloudSql:"create table rok_sync (id text primary key, data jsonb, updated_at timestamptz); alter table rok_sync enable row level security; create policy p on rok_sync for all using (true) with check (true);",cloudSetupFb:"Firebase: 1) Account at firebase.google.com · 2) Create project · 3) Create Realtime Database · 4) Rules to {\".read\":true,\".write\":true} (private test only) · 5) Copy database URL.",cloudWarn:"Note: With open rules anyone with sync code + URL can access. Fine for private use; otherwise restrict access rules.",
+    sternBez:["1★","2★","3★","4★","5★","Exp 1","Exp 2","Exp 3","Exp 4","Master"],
+    wochenplan:[
+      {w:1,c:"#d97706",b:"Mightiest Governor – Phase 1",ev:[{n:"Mightiest Governor",s:25,t:"Gather power by building/researching. Only activate at event start!"},{n:"Alliance events",s:8,t:"Open chests, give help."},{n:"Daily tasks & VIP",s:4,t:"Complete daily."}]},
+      {w:2,c:"#1d4ed8",b:"Ceroli Crisis + Ark of Osiris",ev:[{n:"Ceroli Crisis",s:15,t:"Complete all 5 phases."},{n:"Ark of Osiris",s:12,t:"Play all 3 phases."},{n:"Alliance + Daily",s:12,t:"Contributions and tasks."}]},
+      {w:3,c:"#7c3aed",b:"MG Phase 2 + KvK events",ev:[{n:"KvK / Golden Age",s:30,t:"Kills → milestone rewards. Coordinate with alliance!"},{n:"MG Phase 2",s:15,t:"Complete KvK milestones."},{n:"Alliance + Daily",s:12,t:"Stay active."}]},
+      {w:4,c:"#15803d",b:"Season Pass + Ark of Osiris",ev:[{n:"Season Pass",s:20,t:"Best value for money."},{n:"Ark of Osiris",s:12,t:"Second round."},{n:"Alliance + Daily",s:12,t:"Open chests."}]}
+    ]
+  }
+};
+
+// ═══════════════════════════════════════════════
+// DATEN (Kommandanten mit DE+EN-Feldern)
+// ═══════════════════════════════════════════════
+var TIER_META={S:{farbe:"#7c3aed",bg:"#ede9fe"},A:{farbe:"#b45309",bg:"#fef3c7"},B:{farbe:"#1d4ed8",bg:"#dbeafe"},C:{farbe:"#4b5563",bg:"#f3f4f6"}};
+
+var KOM=[
+  {id:"arthur",name:"Arthur Pendragon",tier:"S",f:"#7c3aed",s:"⚜️",r:{de:"Kavallerie · Combo",en:"Cavalry · Combo"},h:{de:"Stärkster Kommandant 2025/26. Combo-Talent passt zu jedem Typ.",en:"Strongest commander 2025/26. Combo talent fits any type."},p:["huo_qubing","achilleus","nevsky"]},
+  {id:"huo_qubing",name:"Huo Qubing",tier:"S",f:"#d97706",s:"⚔️",r:{de:"Kavallerie · Burst",en:"Cavalry · Burst"},h:{de:"Stärkster Kavallerie-DPS. Meta-Paar: Huo + Arthur.",en:"Strongest cavalry DPS. Meta pair: Huo + Arthur."},p:["arthur","liu_che"]},
+  {id:"bai_qi",name:"Bai Qi",tier:"S",f:"#dc2626",s:"🗡️",r:{de:"Infanterie · Angriff",en:"Infantry · Attack"},h:{de:"Absoluter Infanterie-Topwert. Bai Qi + Liu Che = Meta.",en:"Top infantry value. Bai Qi + Liu Che = meta."},p:["liu_che","philip"]},
+  {id:"gang_gamchan",name:"Gang Gamchan",tier:"S",f:"#065f46",s:"🥋",r:{de:"Infanterie · Combo",en:"Infantry · Combo"},h:{de:"Aufsteigender S-Tier 2025/26. Mit Arthur stark.",en:"Rising S-tier 2025/26. Strong with Arthur."},p:["arthur","bai_qi"]},
+  {id:"qin_shi",name:"Qin Shi Huang",tier:"S",f:"#991b1b",s:"🏯",r:{de:"Bogenschützen · Kontrolle",en:"Archers · Control"},h:{de:"Stärkster Bogenschützen-Anführer.",en:"Strongest archer leader."},p:["zhuge_liang","p_hermann"]},
+  {id:"zhuge_liang",name:"Zhuge Liang",tier:"S",f:"#1d4ed8",s:"🔮",r:{de:"Bogenschützen · Support",en:"Archers · Support"},h:{de:"Zhuge + P-Hermann = beste Bogenschützen-Paarung.",en:"Zhuge + P-Hermann = best archer pairing."},p:["p_hermann","ysg"]},
+  {id:"p_hermann",name:"P-Hermann",tier:"A",f:"#2563eb",s:"🛡️",r:{de:"Bogenschützen · Schweigen",en:"Archers · Silence"},h:{de:"Stärkstes Schweige-Kit. Top mit Zhuge oder Arthur.",en:"Strongest silence kit. Top with Zhuge or Arthur."},p:["zhuge_liang","arthur"]},
+  {id:"liu_che",name:"Liu Che",tier:"A",f:"#be123c",s:"👑",r:{de:"Kavallerie · Buffs",en:"Cavalry · Buffs"},h:{de:"Beste Synergie mit Bai Qi.",en:"Best synergy with Bai Qi."},p:["bai_qi","huo_qubing"]},
+  {id:"achilleus",name:"Achilleus",tier:"A",f:"#92400e",s:"🏹",r:{de:"Kavallerie/Inf · Burst",en:"Cavalry/Inf · Burst"},h:{de:"Top-Paarung mit Arthur (Cavalry-Combo).",en:"Top pairing with Arthur (cavalry combo)."},p:["arthur","p_hermann"]},
+  {id:"nevsky",name:"Alexander Nevsky",tier:"A",f:"#1e40af",s:"❄️",r:{de:"Kavallerie · Angriff",en:"Cavalry · Attack"},h:{de:"Starke Alternative zu Huo. Gut mit Arthur.",en:"Strong alternative to Huo. Good with Arthur."},p:["arthur","liu_che"]},
+  {id:"philip",name:"Philip II",tier:"A",f:"#6d28d9",s:"♟️",r:{de:"Gemischt · Universal-Buff",en:"Mixed · Universal buff"},h:{de:"Universellster Buff-Kommandant.",en:"Most universal buff commander."},p:["bai_qi","arthur"]},
+  {id:"ragnar_p",name:"Ragnar (Prime)",tier:"A",f:"#c2410c",s:"🪓",r:{de:"Infanterie · Angriff",en:"Infantry · Attack"},h:{de:"Starker Infanterie-Anführer.",en:"Strong infantry leader."},p:["arthur","bai_qi"]},
+  {id:"minamoto",name:"Minamoto no Yoshitsune",tier:"A",f:"#0f766e",s:"🌸",r:{de:"Kavallerie · Geschwindigkeit",en:"Cavalry · Speed"},h:{de:"Schnellster Kavallerie-Kommandant.",en:"Fastest cavalry commander."},p:["cao_cao","liu_che"]},
+  {id:"ysg",name:"Yi Seong-gye",tier:"A",f:"#15803d",s:"🎯",r:{de:"Bogenschützen · AoE",en:"Archers · AoE"},h:{de:"YSG + P-Hermann solide Alternative.",en:"YSG + P-Hermann solid alternative."},p:["p_hermann","zhuge_liang"]},
+  {id:"sun_tzu_p",name:"Sun Tzu (Prime)",tier:"A",f:"#0369a1",s:"📖",r:{de:"Gemischt · Support",en:"Mixed · Support"},h:{de:"Vielseitiger Support.",en:"Versatile support."},p:["arthur","bai_qi"]},
+  {id:"p_boudica",name:"P-Boudica",tier:"B",f:"#047857",s:"🔥",r:{de:"Gemischt · Debuff",en:"Mixed · Debuff"},h:{de:"Starke Debuffs. Im 2025-Meta etwas verdrängt.",en:"Strong debuffs. Somewhat displaced in 2025 meta."},p:["cheok","liu_che"]},
+  {id:"cheok",name:"Cheok Jun-gyeong",tier:"B",f:"#065f46",s:"👣",r:{de:"Infanterie · Verteidigung",en:"Infantry · Defense"},h:{de:"Gut für Verteidigung.",en:"Good for defense."},p:["p_boudica","p_hermann"]},
+  {id:"leonidas",name:"Leonidas I",tier:"B",f:"#374151",s:"🏛️",r:{de:"Infanterie · Verteidigung",en:"Infantry · Defense"},h:{de:"Solid für Stadtverteidigung.",en:"Solid for city defense."},p:["charles","cheok"]},
+  {id:"william",name:"Wilhelm I",tier:"B",f:"#4c1d95",s:"🏰",r:{de:"Kavallerie/Bogenschützen",en:"Cavalry/Archers"},h:{de:"Vielseitig, von Spezialisierten übertroffen.",en:"Versatile, surpassed by specialists."},p:["arthur","ysg"]},
+  {id:"richard",name:"Richard I",tier:"B",f:"#b91c1c",s:"✝️",r:{de:"Kavallerie · Heilung",en:"Cavalry · Healing"},h:{de:"Gut für lange Kämpfe.",en:"Good for long fights."},p:["saladin","el_cid"]},
+  {id:"hannibal",name:"Hannibal Barca",tier:"B",f:"#a16207",s:"🐘",r:{de:"Gemischt · Führung",en:"Mixed · Leadership"},h:{de:"Gut für Einsteiger.",en:"Good for beginners."},p:["caesar","scipio"]},
+  {id:"saladin",name:"Saladin",tier:"B",f:"#0f766e",s:"🌙",r:{de:"Kavallerie · Heilung",en:"Cavalry · Healing"},h:{de:"Heilung und Buffs.",en:"Healing and buffs."},p:["richard","el_cid"]},
+  {id:"el_cid",name:"El Cid",tier:"B",f:"#b45309",s:"🐴",r:{de:"Kavallerie · Support",en:"Cavalry · Support"},h:{de:"Gut als Sekundär.",en:"Good as secondary."},p:["saladin","richard"]},
+  {id:"guan_yu",name:"Guan Yu",tier:"B",f:"#9f1239",s:"🔱",r:{de:"Infanterie · Angriff",en:"Infantry · Attack"},h:{de:"Solider Infanterie-Anführer.",en:"Solid infantry leader."},p:["ragnar_p","bai_qi"]},
+  {id:"mehmed",name:"Mehmed II",tier:"B",f:"#1e3a5f",s:"🕌",r:{de:"Führung · Rallye",en:"Leadership · Rally"},h:{de:"Durch Arthur überholt.",en:"Surpassed by Arthur."},p:["arthur","caesar"]},
+  {id:"aethelflaed",name:"Aethelflaed",tier:"B",f:"#6b21a8",s:"👸",r:{de:"Gemischt · Debuff",en:"Mixed · Debuff"},h:{de:"Bester Epic-Debuffer.",en:"Best epic debuffer."},p:["arthur","p_boudica"]},
+  {id:"joan_p",name:"Joan of Arc (Prime)",tier:"C",f:"#ca8a04",s:"⚡",r:{de:"Führung · Support",en:"Leadership · Support"},h:{de:"Früher Meta, heute ersetzt.",en:"Former meta, now replaced."},p:["hannibal","caesar"]},
+  {id:"charles",name:"Karl Martell",tier:"C",f:"#374151",s:"🛡️",r:{de:"Infanterie · Verteidigung",en:"Infantry · Defense"},h:{de:"Nur für Garnison.",en:"Garrison only."},p:["leonidas","scipio"]},
+  {id:"cao_cao",name:"Cao Cao",tier:"C",f:"#6b7280",s:"⚙️",r:{de:"Kavallerie · Mobilität",en:"Cavalry · Mobility"},h:{de:"Für KvK zu schwach.",en:"Too weak for KvK."},p:["minamoto","el_cid"]},
+  {id:"gengis",name:"Dschingis Khan",tier:"C",f:"#92400e",s:"🏹",r:{de:"Kavallerie · Geschwindigkeit",en:"Cavalry · Speed"},h:{de:"Für KvK veraltet.",en:"Outdated for KvK."},p:["cao_cao","minamoto"]},
+  {id:"caesar",name:"Julius Cäsar",tier:"C",f:"#c2410c",s:"🏛️",r:{de:"Führung · Marsch",en:"Leadership · March"},h:{de:"Für Einsteiger.",en:"For beginners."},p:["hannibal","scipio"]},
+  {id:"scipio",name:"Scipio Africanus",tier:"C",f:"#9ca3af",s:"🦅",r:{de:"Führung · Verteidigung",en:"Leadership · Defense"},h:{de:"Nur für Anfänger.",en:"Beginners only."},p:["caesar","charles"]},
+  {id:"alex_great",name:"Alexander der Große",tier:"C",f:"#d97706",s:"👑",r:{de:"Kavallerie · Angriff",en:"Cavalry · Attack"},h:{de:"Heute überholt.",en:"Outdated today."},p:["caesar","hannibal"]},
+  {id:"frederick",name:"Friedrich I",tier:"C",f:"#1e40af",s:"⚔️",r:{de:"Kavallerie · Angriff",en:"Cavalry · Attack"},h:{de:"Für KvK unzureichend.",en:"Insufficient for KvK."},p:["caesar","alex_great"]},
+  {id:"tomoe",name:"Tomoe Gozen",tier:"C",f:"#be123c",s:"🏹",r:{de:"Bogenschützen · Angriff",en:"Archers · Attack"},h:{de:"Guter Einstieg.",en:"Good entry."},p:["ysg","william"]}
+];
+
+var TRUPPENTYPEN=[
+  {id:"kavallerie",symbol:"🐎",farbe:"#d97706",
+   name:{de:"Kavallerie",en:"Cavalry"},
+   stark:{de:"Bogenschützen ✓",en:"Archers ✓"},schwach:{de:"Infanterie ✗",en:"Infantry ✗"},
+   info:{de:"Schnellste Truppe. Ideal für KvK-Angriffe. Schlägt Bogenschützen.",en:"Fastest troop. Ideal for KvK attacks. Beats archers."},
+   hauptPaar:{p1:"huo_qubing",p2:"arthur",q:"Meta ⭐⭐⭐",e:{de:"Huo Qubings Burst-DPS + Arthurs Combo-Talent = stärkstes Kavallerie-Paar 2025/26.",en:"Huo Qubing's burst DPS + Arthur's combo talent = strongest cavalry pair 2025/26."}},
+   altPaare:[{p1:"arthur",p2:"achilleus",q:"⭐⭐",e:{de:"Arthur + Achilleus Einzelziel-Burst.",en:"Arthur + Achilleus single-target burst."}},{p1:"nevsky",p2:"arthur",q:"⭐",e:{de:"Nevsky als Alternative zu Huo.",en:"Nevsky as alternative to Huo."}},{p1:"huo_qubing",p2:"liu_che",q:"⭐",e:{de:"Klassisch. Etwas schwächer.",en:"Classic. Slightly weaker."}}],
+   reihenfolge:[{id:"arthur",g:{de:"Universell – höchste Priorität",en:"Universal – top priority"}},{id:"huo_qubing",g:{de:"Stärkster Kavallerie-DPS",en:"Strongest cavalry DPS"}},{id:"achilleus",g:{de:"Starker Alternativpartner",en:"Strong alternative partner"}},{id:"nevsky",g:{de:"Alternative Hauptanführer",en:"Alternative main leader"}},{id:"liu_che",g:{de:"Solider Sekundär",en:"Solid secondary"}}],
+   geeignet:["arthur","huo_qubing","liu_che","nevsky","minamoto","achilleus","richard","saladin","el_cid","cao_cao","gengis","alex_great","frederick","philip"],
+   talent:{de:"Kavallerie-Angriff · Verteidigung · HP · Geschwindigkeit",en:"Cavalry attack · defense · HP · speed"},
+   tipps:{de:["Arthur zuerst auf 5★ – universell für Kavallerie und Infanterie","Huo Qubings Talentbaum auf Kavallerie-Schaden ausrichten","Kavallerie ist anfällig gegen starke Infanterie-Paare"],en:["Arthur to 5★ first – universal for cavalry and infantry","Set Huo Qubing's talent tree to cavalry damage","Cavalry is vulnerable to strong infantry pairs"]}},
+  {id:"infanterie",symbol:"🗡️",farbe:"#dc2626",
+   name:{de:"Infanterie",en:"Infantry"},
+   stark:{de:"Kavallerie ✓",en:"Cavalry ✓"},schwach:{de:"Bogenschützen ✗",en:"Archers ✗"},
+   info:{de:"Robusteste Truppe mit höchsten HP. Ideal für Frontlinien und Rallyes.",en:"Toughest troop with highest HP. Ideal for front lines and rallies."},
+   hauptPaar:{p1:"bai_qi",p2:"liu_che",q:"Meta ⭐⭐⭐",e:{de:"Bai Qi stärkster Infanterie-Anführer. Liu Che liefert massive Buffs.",en:"Bai Qi strongest infantry leader. Liu Che provides massive buffs."}},
+   altPaare:[{p1:"gang_gamchan",p2:"arthur",q:"⭐⭐⭐",e:{de:"Aufstrebendes Meta-Paar 2025/26.",en:"Rising meta pair 2025/26."}},{p1:"bai_qi",p2:"philip",q:"⭐⭐",e:{de:"Philip als universeller Buff-Sekundär.",en:"Philip as universal buff secondary."}},{p1:"ragnar_p",p2:"bai_qi",q:"⭐",e:{de:"Ragnar als Alternative.",en:"Ragnar as alternative."}}],
+   reihenfolge:[{id:"bai_qi",g:{de:"Höchste Infanterie-Priorität",en:"Highest infantry priority"}},{id:"gang_gamchan",g:{de:"Aufsteigender S-Tier",en:"Rising S-tier"}},{id:"liu_che",g:{de:"Bester Bai Qi-Partner",en:"Best Bai Qi partner"}},{id:"ragnar_p",g:{de:"Alternativer Hauptanführer",en:"Alternative main leader"}},{id:"p_hermann",g:{de:"Schweige-Kontrolle",en:"Silence control"}}],
+   geeignet:["bai_qi","gang_gamchan","p_hermann","ragnar_p","cheok","leonidas","charles","guan_yu","mehmed","hannibal","caesar","scipio","arthur","achilleus","philip"],
+   talent:{de:"Infanterie-Angriff · Verteidigung · HP · Widerstand",en:"Infantry attack · defense · HP · resistance"},
+   tipps:{de:["Bai Qi hat höchste Priorität – beste Infanterie-Investition","Gang Gamchan 2025/26 auf dem Weg in den S-Tier","Infanterie ist stärkste Garnisons-Truppe"],en:["Bai Qi has top priority – best infantry investment","Gang Gamchan rising to S-tier in 2025/26","Infantry is the strongest garrison troop"]}},
+  {id:"bogenschuetzen",symbol:"🏹",farbe:"#1d4ed8",
+   name:{de:"Bogenschützen",en:"Archers"},
+   stark:{de:"Infanterie ✓",en:"Infantry ✓"},schwach:{de:"Kavallerie ✗",en:"Cavalry ✗"},
+   info:{de:"Höchster Fernkampfschaden. Schlägt Infanterie, anfällig für Kavallerie.",en:"Highest ranged damage. Beats infantry, vulnerable to cavalry."},
+   hauptPaar:{p1:"qin_shi",p2:"zhuge_liang",q:"Meta ⭐⭐⭐",e:{de:"Qin Shi AoE-Kontrolle + Zhuge Debuffs = stärkste Bogenschützen-Kombination.",en:"Qin Shi AoE control + Zhuge debuffs = strongest archer combination."}},
+   altPaare:[{p1:"ysg",p2:"p_hermann",q:"⭐⭐",e:{de:"YSG + Schweige-Kontrolle.",en:"YSG + silence control."}},{p1:"zhuge_liang",p2:"p_hermann",q:"⭐⭐",e:{de:"Zhuge primär + Schweigen.",en:"Zhuge primary + silence."}},{p1:"ysg",p2:"william",q:"⭐",e:{de:"Klassisches YSG-Paar.",en:"Classic YSG pair."}}],
+   reihenfolge:[{id:"qin_shi",g:{de:"Stärkster Bogenschützen-Kommandant",en:"Strongest archer commander"}},{id:"zhuge_liang",g:{de:"Bester Partner für Qin Shi",en:"Best partner for Qin Shi"}},{id:"p_hermann",g:{de:"Schweige-Kontrolle",en:"Silence control"}},{id:"ysg",g:{de:"Alternative Hauptanführer",en:"Alternative main leader"}},{id:"william",g:{de:"Zugänglicher Sekundär",en:"Accessible secondary"}}],
+   geeignet:["qin_shi","zhuge_liang","ysg","p_hermann","william","tomoe"],
+   talent:{de:"Bogenschützen-Angriff · Verteidigung · HP · Reichweite",en:"Archer attack · defense · HP · range"},
+   tipps:{de:["Qin Shi Huang hat absolute Priorität","P-Hermanns Talentbaum auf Bogenschützen + Schweigen","Bogenschützen anfällig für Kavallerie – Allianz-Deckung suchen"],en:["Qin Shi Huang has absolute priority","Set P-Hermann's talent tree to archers + silence","Archers vulnerable to cavalry – seek alliance cover"]}}
+];
+
+var GLOSSAR=[
+  {s:"⚔️",b:{de:"Kommandant",en:"Commander"},t:{de:"Dein Held im Spiel. Immer zwei zusammen (Paar). Das ⚔️-Symbol siehst du auch im Spiel.",en:"Your hero in the game. Always two together (pair). You also see the ⚔️ symbol in-game."}},
+  {s:"🏺",b:{de:"Skulpturen",en:"Sculptures"},t:{de:"Items zum Aufrüsten der Sterne. Jeder Kommandant hat eigene; universelle (goldene ⭐) für alle.",en:"Items for upgrading stars. Each commander has their own; universal ones (golden ⭐) for all."}},
+  {s:"⭐",b:{de:"Universelle Sterne (3 Sorten)",en:"Universal Stars (3 types)"},t:{de:"Goldene Starlight-Sterne für JEDEN legendären Kommandanten. Drei Sorten: Einzeln (100 Star-EXP, +10% Glück), Gesegnet (400 EXP, +20% Glück), Bündel (800 EXP, +5% Glück). Im Header nach Sorte eingeben.",en:"Golden starlight stars for ANY legendary commander. Three types: Single (100 star XP, +10% luck), Blessed (400 XP, +20% luck), Bundle (800 XP, +5% luck). Enter by type in the header."}},
+  {s:"🌟",b:{de:"Stern-Level (★)",en:"Star Level (★)"},t:{de:"Aufwertung 1★ bis 5★, dann Expertise (Exp 1–4) bis Meister.",en:"Upgrade 1★ to 5★, then expertise (Exp 1–4) up to Master."}},
+  {s:"💫",b:{de:"Expertise / Meisterschaft",en:"Expertise / Mastery"},t:{de:"Weitere Aufwertung nach 5★. Goldener Rahmen um das Portrait.",en:"Further upgrade after 5★. Golden frame around the portrait."}},
+  {s:"📊",b:{de:"Kommandanten-Level (1–60)",en:"Commander Level (1–60)"},t:{de:"Eigenes Level. Höher = mehr HP und Angriff.",en:"Own level. Higher = more HP and attack."}},
+  {s:"📚",b:{de:"EXP-Bände",en:"XP Tomes"},t:{de:"Items zum Leveln. 1 Band = 50.000 Commander-Erfahrung.",en:"Items for leveling. 1 tome = 50,000 commander XP."}},
+  {s:"🎁",b:{de:"Paket / Bundle",en:"Bundle"},t:{de:"Shop-Angebot bei Level 10/20/30/40/50/60.",en:"Shop offer at level 10/20/30/40/50/60."}},
+  {s:"🎯",b:{de:"Paket-Trigger",en:"Bundle Trigger"},t:{de:"Level, das ein Paket freischaltet.",en:"Level that unlocks a bundle."}},
+  {s:"🤝",b:{de:"Paar / Paarung",en:"Pair / Pairing"},t:{de:"Zwei Kommandanten zusammen. Primär = Hauptanführer (~65%), Sekundär = Buffs.",en:"Two commanders together. Primary = main leader (~65%), secondary = buffs."}},
+  {s:"🏆",b:{de:"Tier-Liste (S/A/B/C)",en:"Tier List (S/A/B/C)"},t:{de:"Ranking nach Stärke. Quelle: allclash.com 2025/26.",en:"Ranking by strength. Source: allclash.com 2025/26."}},
+  {s:"🌍",b:{de:"Meta",en:"Meta"},t:{de:"Most Effective Tactics Available – aktuell stärkste Strategie.",en:"Most Effective Tactics Available – currently strongest strategy."}},
+  {s:"⚔️",b:{de:"KvK (Kingdom vs. Kingdom)",en:"KvK (Kingdom vs. Kingdom)"},t:{de:"Wichtigstes PvP-Event mit Skulpturen als Belohnung.",en:"Most important PvP event with sculptures as reward."}},
+  {s:"🚩",b:{de:"Rallye",en:"Rally"},t:{de:"Koordinierter Allianz-Angriff auf ein Ziel.",en:"Coordinated alliance attack on one target."}},
+  {s:"🏰",b:{de:"Garnison",en:"Garrison"},t:{de:"Kommandanten zur Stadtverteidigung – kein Marsch.",en:"Commanders for city defense – no march."}},
+  {s:"👑",b:{de:"Mightiest Governor (MG)",en:"Mightiest Governor (MG)"},t:{de:"Power durch Bauen/Forschen. Erst beim Start freischalten!",en:"Power through building/research. Only activate at start!"}},
+  {s:"🔄",b:{de:"Export / Import",en:"Export / Import"},t:{de:"Daten per JSON-Text zwischen Geräten übertragen.",en:"Transfer data between devices via JSON text."}}
+];
+
+var STERN_KOSTEN=[10,20,30,50,50],EXPERTISE_KOST=[50,50,50,60],MAX_STERN=9;
+function skulpBen(von,bis){var s=0;for(var i=von;i<bis;i++)s+=i<5?STERN_KOSTEN[i]:EXPERTISE_KOST[i-5];return s;}
+var EXP_TAB=[[1,0],[5,0.02],[10,0.1],[15,0.3],[20,1],[25,2],[30,4],[35,7],[40,12],[45,20],[50,30],[55,50],[60,80]];
+function expKum(lv){lv=Math.max(1,Math.min(60,lv));for(var i=1;i<EXP_TAB.length;i++){var a=EXP_TAB[i-1],b=EXP_TAB[i];if(lv<=b[0]){var t=(lv-a[0])/(b[0]-a[0]);return a[1]+t*(b[1]-a[1]);}}return 80;}
+function expB(von,bis){return Math.max(0,Math.round((expKum(bis)-expKum(von))*10)/10);}
+var PAKETE=[{level:10,skulp:5,f:"#6b7280"},{level:20,skulp:12,f:"#1d4ed8"},{level:30,skulp:25,f:"#b45309"},{level:40,skulp:40,f:"#d97706"},{level:50,skulp:60,f:"#15803d"},{level:60,skulp:90,f:"#7c3aed"}];
+function nP(lv){for(var i=0;i<PAKETE.length;i++)if(PAKETE[i].level>lv)return PAKETE[i];return null;}
+
+var L={bg:"#f0f4f8",card:"#fff",inner:"#f8fafc",border:"#e2e8f0",text:"#1e293b",sub:"#475569",mute:"#94a3b8",gold:"#d97706",goldBg:"#fef3c7",green:"#15803d",red:"#dc2626",blue:"#1d4ed8",acc:"#7c3aed",sh:"0 1px 4px rgba(0,0,0,.08)"};
+
+var LS_KEY="rok-v4";
+function leerK(){return {lv:1,stern:0,skulp:0};}
+function ladeDaten(){try{var r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
+function speichereDaten(d){try{localStorage.setItem(LS_KEY,JSON.stringify(d));return true;}catch(e){return false;}}
+
+// ═══════════════════════════════════════════════
+// ☁️ CLOUD-SYNC (Supabase / Firebase) — nur in der Cloud-Variante
+// ═══════════════════════════════════════════════
+var CLOUD_KEY="rok-cloud-cfg";
+function ladeCloudCfg(){try{var r=localStorage.getItem(CLOUD_KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
+function speichereCloudCfg(c){try{localStorage.setItem(CLOUD_KEY,JSON.stringify(c));}catch(e){}}
+function loescheCloudCfg(){try{localStorage.removeItem(CLOUD_KEY);}catch(e){}}
+function cloudPayload(d){return {besitz:d.besitz,konfigs:d.konfigs,zielId:d.zielId,truppenTyp:d.truppenTyp,sterneEinzeln:d.sterneEinzeln,sterneGesegnet:d.sterneGesegnet,sterneBuendel:d.sterneBuendel,lang:d.lang};}
+function cloudPull(cfg){
+  if(cfg.provider==="supabase"){
+    var url=cfg.url.replace(/\/+$/,"")+"/rest/v1/rok_sync?id=eq."+encodeURIComponent(cfg.syncId)+"&select=data";
+    return fetch(url,{headers:{apikey:cfg.key,Authorization:"Bearer "+cfg.key}}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}).then(function(arr){return (arr&&arr[0]&&arr[0].data)?arr[0].data:null;});
+  }else{
+    var u=cfg.url.replace(/\/+$/,"")+"/rok/"+encodeURIComponent(cfg.syncId)+".json";
+    return fetch(u).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return r.json();}).then(function(d){if(!d)return null;return d.data?d.data:(d.besitz?d:null);});
+  }
+}
+function cloudPush(cfg,data){
+  var payload=cloudPayload(data),now=new Date().toISOString();
+  if(cfg.provider==="supabase"){
+    var url=cfg.url.replace(/\/+$/,"")+"/rest/v1/rok_sync?on_conflict=id";
+    return fetch(url,{method:"POST",headers:{apikey:cfg.key,Authorization:"Bearer "+cfg.key,"Content-Type":"application/json",Prefer:"resolution=merge-duplicates"},body:JSON.stringify({id:cfg.syncId,data:payload,updated_at:now})}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return true;});
+  }else{
+    var u=cfg.url.replace(/\/+$/,"")+"/rok/"+encodeURIComponent(cfg.syncId)+".json";
+    return fetch(u,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({data:payload,updated_at:now})}).then(function(r){if(!r.ok)throw new Error("HTTP "+r.status);return true;});
+  }
+}
+function findKom(id){for(var i=0;i<KOM.length;i++)if(KOM[i].id===id)return KOM[i];return null;}
+
+// Helfer-Komponenten
+function TierBadge(p){var t=TIER_META[p.tier]||TIER_META.C;return _h("span",{style:{background:t.bg,color:t.farbe,fontSize:11,fontWeight:800,padding:"2px 7px",borderRadius:99,border:"1px solid "+t.farbe+"44"}},p.tier);}
+function Bar(p){var pct=p.max>0?Math.min(100,(p.wert/p.max)*100):0;return _h("div",{style:{background:L.border,borderRadius:99,height:p.h||8,overflow:"hidden"}},_h("div",{style:{width:pct+"%",height:"100%",background:"linear-gradient(90deg,"+p.farbe+"99,"+p.farbe+")",borderRadius:99,transition:"width .4s"}}));}
+function Sterne(p){var n=Math.min(p.level,4)+1,exp=Math.max(0,p.level-4),c=[];for(var i=0;i<n;i++)c.push(_h("span",{key:i,style:{fontSize:p.gr||14,color:p.farbe,lineHeight:1}},"★"));if(exp>0)c.push(_h("span",{key:"e",style:{fontSize:9,background:p.farbe,color:"#fff",padding:"1px 5px",borderRadius:99,marginLeft:2,fontWeight:800}},"EXP"+exp));return _h("span",{style:{display:"inline-flex",alignItems:"center",gap:2}},c);}
+function Karte(p){var f=p.farbe||L.blue;return _h("div",{style:{background:L.card,border:"1px solid "+L.border,borderRadius:14,overflow:"hidden",boxShadow:L.sh}},_h("div",{style:{background:f+"0d",padding:"11px 16px",borderBottom:"1px solid "+L.border,display:"flex",alignItems:"center",gap:8}},p.symbol&&_h("span",{style:{fontSize:16}},p.symbol),_h("span",{style:{fontSize:13,fontWeight:800,color:f}},p.titel)),_h("div",{style:{padding:"14px 16px"}},p.children));}
+
+// Strategie
+function calcStrategie(zielId,konfigs,besitz,gold,lang){
+  try{
+    var T=TXT[lang];
+    var zK=findKom(zielId); if(!zK)return null;
+    var zC=konfigs[zielId]; if(!zC)return null;
+    var expBis60=expB(zC.lv,60),skulpMax=skulpBen(zC.stern,MAX_STERN);
+    var eigene=zC.skulp,gesamt=eigene+gold,fehlt=Math.max(0,skulpMax-gesamt);
+    var lv60=zC.lv>=60,maxStern=zC.stern>=MAX_STERN;
+    var fort=Math.round(((zC.lv/60)*50+(zC.stern/MAX_STERN)*50));
+    var pakete=[];
+    KOM.forEach(function(k){if(k.id===zielId||!besitz[k.id])return;var kC=konfigs[k.id];if(!kC)return;var p=nP(kC.lv);if(!p)return;var diff=p.level-kC.lv,kosten=expB(kC.lv,p.level),roi=kosten>0?Math.round(p.skulp/kosten*10)/10:999;pakete.push({k:k,kC:kC,p:p,diff:diff,kosten:kosten,roi:roi});});
+    pakete.sort(function(a,b){return b.roi-a.roi;});pakete=pakete.slice(0,4);
+    var paare=[];(zK.p||[]).forEach(function(pid){var pk=findKom(pid);if(!pk)return;var bes=!!besitz[pid];paare.push({pk:pk,bes:bes,pkC:bes?konfigs[pid]:null});});
+    var akt=[];
+    var nm=lang==="de"?zK.name:zK.name;
+    if(!lv60)akt.push({pri:1,text:(lang==="de"?nm+" von Level "+zC.lv+" auf 60 leveln":"Level "+nm+" from "+zC.lv+" to 60"),detail:(lang==="de"?"Benötigt ca. "+expBis60+" EXP-Bände (à 50.000 XP)":"Needs ~"+expBis60+" XP tomes (50,000 XP each)"),f:L.blue});
+    if(gold>0&&!maxStern)akt.push({pri:2,text:(lang==="de"?gold+" universelle Skulpturen verfügbar":gold+" universal sculptures available"),detail:(lang==="de"?"Eigene: "+eigene+" + Vorrat: "+gold+" = "+gesamt+" · Noch "+fehlt+" bis Meister":"Own: "+eigene+" + stock: "+gold+" = "+gesamt+" · "+fehlt+" left to Master"),f:L.gold});
+    if(pakete.length>0&&!maxStern){var tp=pakete[0];akt.push({pri:tp.diff<=5?2:4,text:(lang==="de"?tp.k.name+" auf Level "+tp.p.level+" (+"+tp.diff+" Level)":tp.k.name+" to level "+tp.p.level+" (+"+tp.diff+")"),detail:(lang==="de"?"~"+tp.kosten+" EXP-Bände → +"+tp.p.skulp+" Skulpturen für "+nm:"~"+tp.kosten+" XP tomes → +"+tp.p.skulp+" sculptures for "+nm),f:L.gold});}
+    if(fehlt>0)akt.push({pri:3,text:(lang==="de"?fehlt+" Skulpturen für "+nm+" nötig":fehlt+" sculptures needed for "+nm),detail:(lang==="de"?"Vorhanden: "+gesamt+" · Ziel: "+skulpMax+" für Meister":"Available: "+gesamt+" · Goal: "+skulpMax+" for Master"),f:L.acc});
+    paare.forEach(function(it){if(!it.bes)akt.push({pri:5,text:(lang==="de"?it.pk.name+" freischalten":"Unlock "+it.pk.name),detail:(lang==="de"?"Bester Partner für "+nm+" – fehlt noch.":"Best partner for "+nm+" – still missing."),f:L.red});else if(it.pkC&&it.pkC.stern<3)akt.push({pri:4,text:(lang==="de"?it.pk.name+" auf mindestens 3★":it.pk.name+" to at least 3★"),detail:(lang==="de"?"Aktuell: "+TXT[lang].sternBez[it.pkC.stern]:"Currently: "+TXT[lang].sternBez[it.pkC.stern]),f:"#6d28d9"});});
+    akt.sort(function(a,b){return a.pri-b.pri;});
+    return {zK:zK,zC:zC,expBis60:expBis60,skulpMax:skulpMax,eigene:eigene,gesamt:gesamt,fehlt:fehlt,lv60:lv60,maxStern:maxStern,fort:fort,pakete:pakete,paare:paare,akt:akt};
+  }catch(e){return null;}
+}
+
+// Export/Import Modal
+// ☁️ Cloud-Konfig-Modal
+function CloudModal(p){
+  var T=TXT[p.lang];
+  var cfg=p.cfg||{provider:"supabase",url:"",key:"",syncId:""};
+  var provArr=useState(cfg.provider||"supabase");var provider=provArr[0],setProvider=provArr[1];
+  var urlArr=useState(cfg.url||"");var url=urlArr[0],setUrl=urlArr[1];
+  var keyArr=useState(cfg.key||"");var key=keyArr[0],setKey=keyArr[1];
+  var syncArr=useState(cfg.syncId||"");var syncId=syncArr[0],setSyncId=syncArr[1];
+  var stArr=useState("");var st=stArr[0],setSt=stArr[1];
+  var setupArr=useState(false);var setupOpen=setupArr[0],setSetupOpen=setupArr[1];
+  function build(){return {provider:provider,url:url.trim(),key:key.trim(),syncId:syncId.trim()};}
+  function valid(c){return c.url&&c.syncId&&(c.provider==="firebase"||c.key);}
+  function up(){var c=build();if(!valid(c)){setSt(T.cloudErr);return;}setSt("…");cloudPush(c,p.data()).then(function(){speichereCloudCfg(c);p.onConnected(c);setSt(T.cloudUploaded);}).catch(function(){setSt(T.cloudErr);});}
+  function down(){var c=build();if(!valid(c)){setSt(T.cloudErr);return;}setSt("…");cloudPull(c).then(function(d){if(!d){setSt(T.cloudNoData);return;}speichereCloudCfg(c);p.onConnected(c);p.onImport(d);setSt(T.cloudDownloaded);}).catch(function(){setSt(T.cloudErr);});}
+  function disc(){loescheCloudCfg();p.onDisconnect();p.onClose();}
+  var inp={width:"100%",padding:"8px 10px",fontSize:12,border:"1.5px solid "+L.border,borderRadius:8,marginBottom:8,background:"#fff"};
+  return _h("div",{className:"modal-bg",onClick:p.onClose},_h("div",{className:"modal",onClick:function(e){e.stopPropagation();}},
+    _h("div",{style:{fontSize:16,fontWeight:800,color:L.text,marginBottom:6}},T.cloudTitel),
+    _h("div",{style:{fontSize:12,color:L.sub,marginBottom:12,lineHeight:1.6}},T.cloudInfo),
+    _h("div",{style:{fontSize:12,fontWeight:700,color:L.text,marginBottom:6}},T.cloudProvider),
+    _h("div",{style:{display:"flex",gap:8,marginBottom:12}},
+      _h("button",{onClick:function(){setProvider("supabase");},style:{flex:1,padding:"8px",borderRadius:8,border:"1.5px solid "+(provider==="supabase"?L.green:L.border),background:provider==="supabase"?L.green+"15":"#fff",color:provider==="supabase"?L.green:L.sub,fontSize:13,fontWeight:700}},"Supabase"),
+      _h("button",{onClick:function(){setProvider("firebase");},style:{flex:1,padding:"8px",borderRadius:8,border:"1.5px solid "+(provider==="firebase"?L.gold:L.border),background:provider==="firebase"?L.gold+"15":"#fff",color:provider==="firebase"?L.gold:L.sub,fontSize:13,fontWeight:700}},"Firebase")
+    ),
+    _h("input",{value:url,onChange:function(e){setUrl(e.target.value);},placeholder:provider==="supabase"?T.cloudUrlSb:T.cloudUrlFb,style:inp}),
+    provider==="supabase"&&_h("input",{value:key,onChange:function(e){setKey(e.target.value);},placeholder:T.cloudKeySb,style:inp}),
+    _h("input",{value:syncId,onChange:function(e){setSyncId(e.target.value);},placeholder:T.cloudSync,style:inp}),
+    _h("div",{style:{display:"flex",gap:8,marginTop:4,marginBottom:8}},
+      _h("button",{onClick:up,style:{flex:1,padding:"10px",background:L.blue,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:700}},T.cloudConnUp),
+      _h("button",{onClick:down,style:{flex:1,padding:"10px",background:L.green,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:700}},T.cloudConnDown)
+    ),
+    st&&_h("div",{style:{textAlign:"center",fontSize:13,fontWeight:700,color:st[0]==="✓"?L.green:st[0]==="⚠"?L.red:L.sub,marginBottom:8}},st),
+    p.cfg&&_h("button",{onClick:disc,style:{width:"100%",padding:"8px",background:"#fff",color:L.red,border:"1px solid "+L.red+"55",borderRadius:9,fontSize:12,fontWeight:700,marginBottom:8}},T.cloudDisc),
+    _h("button",{onClick:function(){setSetupOpen(!setupOpen);},style:{width:"100%",padding:"8px",background:L.inner,color:L.sub,border:"1px solid "+L.border,borderRadius:9,fontSize:12,fontWeight:700,marginBottom:setupOpen?8:8,textAlign:"left"}},T.cloudSetup),
+    setupOpen&&_h("div",{style:{background:L.inner,border:"1px solid "+L.border,borderRadius:9,padding:12,marginBottom:8}},
+      _h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.6,marginBottom:8}},provider==="supabase"?T.cloudSetupSb:T.cloudSetupFb),
+      provider==="supabase"&&_h("div",{style:{fontSize:9,fontFamily:"monospace",background:"#1e293b",color:"#86efac",padding:8,borderRadius:6,marginBottom:8,whiteSpace:"pre-wrap",wordBreak:"break-all"}},T.cloudSql),
+      _h("div",{style:{fontSize:10,color:L.red,lineHeight:1.5}},"⚠ "+T.cloudWarn)
+    ),
+    _h("button",{onClick:p.onClose,style:{width:"100%",padding:10,background:L.inner,color:L.sub,border:"1px solid "+L.border,borderRadius:9,fontSize:13,fontWeight:700}},T.eiClose)
+  ));
+}
+
+function EIModal(p){
+  var T=TXT[p.lang];var txtArr=useState("");var txt=txtArr[0],setTxt=txtArr[1];
+  var exp=JSON.stringify({besitz:p.z.besitz,konfigs:p.z.konfigs,zielId:p.z.zielId,truppenTyp:p.z.truppenTyp,sterneEinzeln:p.gE,sterneGesegnet:p.gG,sterneBuendel:p.gB,lang:p.lang});
+  function kopiere(){try{navigator.clipboard.writeText(exp);}catch(_){var ta=document.createElement("textarea");ta.value=exp;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);}alert(T.eiCopied);}
+  function imp(){try{var d=JSON.parse(txt);p.onImport(d);p.onClose();}catch(_){alert(T.eiInvalid);}}
+  return _h("div",{className:"modal-bg",onClick:p.onClose},_h("div",{className:"modal",onClick:function(e){e.stopPropagation();}},
+    _h("div",{style:{fontSize:16,fontWeight:800,color:L.text,marginBottom:12}},T.eiTitel),
+    _h("div",{style:{fontSize:12,color:L.sub,marginBottom:12,lineHeight:1.6}},T.eiInfo),
+    _h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:6}},T.eiExport),
+    _h("textarea",{readOnly:true,value:exp,style:{width:"100%",height:70,fontSize:10,padding:8,border:"1px solid "+L.border,borderRadius:8,resize:"none",color:L.sub,background:L.inner}}),
+    _h("button",{onClick:kopiere,style:{width:"100%",padding:10,background:L.gold,color:"#fff",border:"none",borderRadius:9,fontSize:14,fontWeight:700,marginTop:6,marginBottom:14}},T.eiCopy),
+    _h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:6}},T.eiImport),
+    _h("textarea",{value:txt,onChange:function(e){setTxt(e.target.value);},placeholder:T.eiPaste,style:{width:"100%",height:70,fontSize:10,padding:8,border:"1.5px solid "+L.blue,borderRadius:8,resize:"none",marginBottom:8}}),
+    _h("button",{onClick:imp,style:{width:"100%",padding:10,background:L.blue,color:"#fff",border:"none",borderRadius:9,fontSize:14,fontWeight:700,marginBottom:8}},T.eiBtn),
+    _h("button",{onClick:p.onClose,style:{width:"100%",padding:10,background:L.inner,color:L.sub,border:"1px solid "+L.border,borderRadius:9,fontSize:13,fontWeight:700}},T.eiClose)
+  ));
+}
+
+var INIT_KONFIGS={};KOM.forEach(function(k){INIT_KONFIGS[k.id]=leerK();});
+
+function App(){
+  var saved=ladeDaten()||{};
+  var zArr=useState({besitz:saved.besitz||{},konfigs:Object.assign({},INIT_KONFIGS,saved.konfigs||{}),zielId:saved.zielId||null,truppenTyp:saved.truppenTyp||null,tab:"kommandanten"});
+  var z=zArr[0],setZ=zArr[1];
+  var geArr=useState(saved.sterneEinzeln||saved.goldSterne||0);var gE=geArr[0],setGE=geArr[1];
+  var ggArr=useState(saved.sterneGesegnet||0);var gG=ggArr[0],setGG=ggArr[1];
+  var gbArr=useState(saved.sterneBuendel||0);var gB=gbArr[0],setGB=gbArr[1];
+  var gold=gE+gG*4+gB*8;
+  var starExp=gE*100+gG*400+gB*800;
+  var lArr=useState(saved.lang||"de");var lang=lArr[0],setLang=lArr[1];
+  var sArr=useState("");var status=sArr[0],setStatus=sArr[1];
+  var eiArr=useState(false);var showEI=eiArr[0],setShowEI=eiArr[1];
+  var tArr=useState("");var toast=tArr[0],setToast=tArr[1];
+  var ccArr=useState(ladeCloudCfg());var cloudCfg=ccArr[0],setCloudCfg=ccArr[1];
+  var scArr=useState(false);var showCloud=scArr[0],setShowCloud=scArr[1];
+  var cgArr=useState(false);var cloudGeladen=cgArr[0],setCloudGeladen=cgArr[1];
+  var T=TXT[lang];
+
+  function persist(extra){var data={besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang};Object.assign(data,extra||{});return speichereDaten(data);}
+
+  // Cloud: einmaliger Auto-Pull beim Start (falls verbunden)
+  useEffect(function(){
+    if(cloudCfg){cloudPull(cloudCfg).then(function(d){if(d)doImport(d);setCloudGeladen(true);}).catch(function(){setCloudGeladen(true);});}
+    else setCloudGeladen(true);
+  },[]);
+
+  useEffect(function(){
+    setStatus(T.saving);
+    var t=setTimeout(function(){
+      persist()?setStatus(T.saved):setStatus(T.saveErr);
+      if(cloudCfg&&cloudGeladen){cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang}).then(function(){setStatus("☁ "+T.saved);}).catch(function(){});}
+      setTimeout(function(){setStatus("");},2000);
+    },700);
+    return function(){clearTimeout(t);};
+  },[z.besitz,z.konfigs,z.zielId,z.truppenTyp,gold,lang]);
+
+  function manualSave(){persist();if(cloudCfg)cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang}).catch(function(){});setToast(T.savedToast);setTimeout(function(){setToast("");},1800);}
+  function set(p){setZ(function(prev){return Object.assign({},prev,p);});}
+  function togK(id){var n=Object.assign({},z.besitz);n[id]=!n[id];set({besitz:n,zielId:(!n[id]&&z.zielId===id)?null:z.zielId});}
+  function updK(id,neu){setZ(function(prev){var k=Object.assign({},prev.konfigs);k[id]=neu;return Object.assign({},prev,{konfigs:k});});}
+  function doImport(d){set({besitz:d.besitz||{},konfigs:Object.assign({},INIT_KONFIGS,d.konfigs||{}),zielId:d.zielId||null,truppenTyp:d.truppenTyp||null});setGE(d.sterneEinzeln||d.goldSterne||0);setGG(d.sterneGesegnet||0);setGB(d.sterneBuendel||0);if(d.lang)setLang(d.lang);}
+
+  var besessen=KOM.filter(function(k){return z.besitz[k.id];});
+  var strat=z.zielId?calcStrategie(z.zielId,z.konfigs,z.besitz,gold,lang):null;
+  var selTyp=null;if(z.truppenTyp){for(var i=0;i<TRUPPENTYPEN.length;i++)if(TRUPPENTYPEN[i].id===z.truppenTyp){selTyp=TRUPPENTYPEN[i];break;}}
+  var tierGruppen=["S","A","B","C"].map(function(tier){return {tier:tier,ks:KOM.filter(function(k){return k.tier===tier;})};});
+  var TABS=[{id:"kommandanten"},{id:"strategie"},{id:"truppentypen"},{id:"wochenplan"},{id:"glossar"}];
+  function L2(s){return typeof s==="object"?s[lang]:s;} // localize data field
+
+  // === Render-Funktionen ===
+  function renderKomm(){
+    try{
+      var rows=[_h("div",{key:"h",style:{background:"#fff7ed",border:"1px solid #d9770644",borderRadius:12,padding:"10px 14px",marginBottom:14,display:"flex",gap:10,alignItems:"flex-start"}},_h("span",{style:{fontSize:18}},"💡"),_h("div",{style:{fontSize:12,color:L.sub,lineHeight:1.6}},T.hintK))];
+      tierGruppen.forEach(function(tg){
+        var tm=TIER_META[tg.tier],aus=tg.ks.filter(function(k){return z.besitz[k.id];});
+        var grid=tg.ks.map(function(k){var sel=!!z.besitz[k.id];return _h("button",{key:k.id,onClick:function(){togK(k.id);},style:{background:sel?k.f+"12":"#fff",border:"2px solid "+(sel?k.f:L.border),borderRadius:10,padding:"8px 6px",textAlign:"center"}},_h("div",{style:{fontSize:18,marginBottom:2}},k.s),_h("div",{style:{fontSize:10,fontWeight:700,color:sel?k.f:L.text,lineHeight:1.2}},k.name),_h("div",{style:{marginTop:3}},_h(TierBadge,{tier:k.tier})),sel&&_h("div",{style:{fontSize:10,color:L.green,fontWeight:700,marginTop:3}},"✓"));});
+        var cards=aus.map(function(k){
+          var kC=z.konfigs[k.id]||leerK(),zS=Math.min(kC.stern+1,MAX_STERN),ben=skulpBen(kC.stern,zS),fehl=kC.stern<MAX_STERN?Math.max(0,ben-kC.skulp):0,np=nP(kC.lv),istZiel=z.zielId===k.id;
+          return _h("div",{key:k.id,style:{background:L.card,border:"2px solid "+(istZiel?k.f:L.border),borderRadius:14,padding:14,boxShadow:istZiel?"0 0 0 3px "+k.f+"18":L.sh}},
+            _h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
+              _h("div",{style:{display:"flex",alignItems:"center",gap:8}},_h("span",{style:{fontSize:18}},k.s),_h("div",null,_h("div",{style:{fontSize:14,fontWeight:800,color:L.text}},k.name),_h("div",{style:{display:"flex",gap:6,alignItems:"center",marginTop:2}},_h(TierBadge,{tier:k.tier}),_h("span",{style:{fontSize:11,color:L.sub}},L2(k.r))))),
+              _h("button",{onClick:function(){set({zielId:istZiel?null:k.id});},style:{padding:"4px 10px",borderRadius:7,border:"1.5px solid "+(istZiel?k.f:L.border),background:istZiel?k.f+"15":"transparent",color:istZiel?k.f:L.mute,fontSize:11,fontWeight:700}},istZiel?T.ziel:T.alsZiel)),
+            _h("div",{className:"grid3"},
+              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.level),_h("div",{style:{display:"flex",alignItems:"center",gap:4}},_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.max(1,kC.lv-1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"−"),_h("input",{type:"number",min:1,max:60,value:kC.lv,onChange:function(e){updK(k.id,Object.assign({},kC,{lv:Math.min(60,Math.max(1,parseInt(e.target.value)||1))}));},style:{flex:1,textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"4px 0",background:L.inner}}),_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.min(60,kC.lv+1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"+")),np&&_h("div",{style:{fontSize:10,marginTop:4,color:np.level-kC.lv<=5?L.gold:L.mute,fontWeight:600}},np.level-kC.lv<=5?T.paketBald.replace("{n}",np.level-kC.lv):T.paketBei.replace("{n}",np.level))),
+              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.sternLevel),_h("select",{value:kC.stern,onChange:function(e){updK(k.id,Object.assign({},kC,{stern:parseInt(e.target.value)}));},style:{width:"100%",border:"1.5px solid "+k.f+"66",borderRadius:6,padding:"5px",fontSize:12,fontWeight:700,color:L.text,background:L.inner}},T.sternBez.map(function(b,i){return _h("option",{key:i,value:i},b);})),_h("div",{style:{marginTop:5}},_h(Sterne,{level:kC.stern,farbe:k.f,gr:12}))),
+              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skulpturen),_h("input",{type:"number",min:0,max:999,value:kC.skulp,onChange:function(e){updK(k.id,Object.assign({},kC,{skulp:Math.max(0,parseInt(e.target.value)||0)}));},style:{width:"100%",textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"5px 2px",background:L.inner}}),kC.stern<MAX_STERN&&_h("div",{style:{fontSize:10,color:fehl===0?L.green:L.mute,marginTop:4,fontWeight:600}},fehl===0?T.bereit:fehl>0?T.bis.replace("{n}",fehl).replace("{s}",T.sternBez[zS]):""))),
+            kC.stern<MAX_STERN&&_h("div",{style:{marginTop:10}},_h(Bar,{wert:Math.min(kC.skulp,ben),max:ben,farbe:k.f,h:6})));
+        });
+        rows.push(_h("div",{key:tg.tier,style:{marginBottom:20}},_h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},_h("div",{style:{background:tm.bg,color:tm.farbe,fontSize:13,fontWeight:900,padding:"2px 12px",borderRadius:99,border:"1.5px solid "+tm.farbe+"55"}},tg.tier+"-"+T.tier),_h("div",{style:{flex:1,height:1,background:L.border}}),_h("div",{style:{fontSize:11,color:L.mute}},aus.length+"/"+tg.ks.length+" "+T.ausgew)),_h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:7,marginBottom:aus.length?12:0}},grid),aus.length>0&&_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},cards)));
+      });
+      return _h("div",null,rows);
+    }catch(e){return _h("div",{style:{color:L.red,padding:16}},"Fehler / Error: "+e.message);}
+  }
+
+  function renderStrat(){
+    try{
+      var rows=[_h(Karte,{key:"z",titel:T.zielWaehlen,symbol:"🎯",farbe:L.gold},besessen.length===0?_h("div",{style:{fontSize:13,color:L.sub,textAlign:"center",padding:8}},T.bitteAusw):_h("div",{style:{display:"flex",gap:8,flexWrap:"wrap"}},besessen.map(function(k){var a=z.zielId===k.id;return _h("button",{key:k.id,onClick:function(){set({zielId:a?null:k.id});},style:{padding:"7px 11px",borderRadius:9,border:"2px solid "+(a?k.f:L.border),background:a?k.f+"15":"#fff",color:a?k.f:L.text,fontSize:12,fontWeight:700,display:"flex",alignItems:"center",gap:5}},_h("span",null,k.s),k.name,_h(TierBadge,{tier:k.tier}));})))];
+      if(!strat&&!z.zielId&&besessen.length>0)rows.push(_h("div",{key:"w",style:{background:"#fff",border:"1px solid "+L.border,borderRadius:14,padding:24,textAlign:"center",color:L.sub,fontSize:14}},T.waehleZiel));
+      if(strat){var zK=strat.zK,zC=strat.zC;
+        rows.push(_h("div",{key:"g",style:{background:"#fff",border:"2px solid "+zK.f,borderRadius:16,padding:16,boxShadow:"0 0 0 3px "+zK.f+"18"}},
+          _h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}},_h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:2,textTransform:"uppercase",marginBottom:3}},T.zielkomm),_h("div",{style:{fontSize:20,fontWeight:900,color:L.text,display:"flex",alignItems:"center",gap:8}},_h("span",null,zK.s),zK.name,_h(TierBadge,{tier:zK.tier})),_h("div",{style:{fontSize:11,color:L.sub,marginTop:2}},L2(zK.r))),_h("div",{style:{textAlign:"right"}},_h("div",{style:{fontSize:30,fontWeight:900,color:strat.fort>=80?L.green:L.gold}},strat.fort+"%"),_h("div",{style:{fontSize:11,color:L.mute}},T.gesamtfort))),
+          _h(Bar,{wert:strat.fort,max:100,farbe:zK.f,h:12}),
+          _h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,marginTop:12}},[{l:T.level.split(" ")[0],v:zC.lv+"/60",ok:strat.lv60},{l:T.expBaende,v:strat.lv60?"✓":"~"+strat.expBis60,ok:strat.lv60},{l:T.sterne,v:T.sternBez[zC.stern],ok:strat.maxStern},{l:T.skulpturen,v:strat.gesamt+"/"+strat.skulpMax,ok:strat.maxStern||strat.gesamt>=strat.skulpMax}].map(function(f,i){return _h("div",{key:i,style:{background:L.inner,borderRadius:9,padding:"9px 8px",textAlign:"center",border:"1px solid "+L.border}},_h("div",{style:{fontSize:15,fontWeight:900,color:f.ok?L.green:L.text}},f.v),_h("div",{style:{fontSize:10,color:L.mute,marginTop:2}},f.l));})),
+          gold>0&&!strat.maxStern&&_h("div",{style:{marginTop:10,padding:"9px 12px",background:L.goldBg,borderRadius:10,border:"1px solid "+L.gold+"44",fontSize:12,color:"#92400e"}},"✨ "+gold+" · "+(lang==="de"?"Eigene":"Own")+": "+strat.eigene+" · "+(lang==="de"?"Gesamt":"Total")+": "+strat.gesamt+" · "+(strat.fehlt>0?(lang==="de"?"Fehlen: "+strat.fehlt:"Missing: "+strat.fehlt):"✓")),
+          (gE+gG+gB)>0&&_h("div",{style:{marginTop:8,padding:"9px 12px",background:"#fffbeb",borderRadius:10,borderLeft:"3px solid "+L.gold,fontSize:11.5,color:L.sub,lineHeight:1.55}},_h("div",{style:{fontWeight:800,color:"#92400e",marginBottom:3}},T.univEmpfTitel),T.univEmpf),
+          _h("div",{style:{marginTop:10,padding:"9px 12px",background:zK.f+"0a",borderRadius:10,borderLeft:"3px solid "+zK.f,fontSize:12,color:L.sub,lineHeight:1.55}},_h("strong",{style:{color:L.text}},T.metaInfo),L2(zK.h))));
+        rows.push(_h(Karte,{key:"a",titel:T.aktionsplan,symbol:"📋",farbe:L.blue},strat.akt.length===0?_h("div",{style:{color:L.green,fontWeight:700,fontSize:14,textAlign:"center",padding:8}},T.vollstaendig):_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},strat.akt.map(function(a,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"11px 12px",background:L.inner,borderRadius:10,border:"1px solid "+a.f+"33",borderLeft:"3px solid "+a.f}},_h("div",{style:{width:22,height:22,borderRadius:"50%",background:a.f,color:"#fff",fontSize:11,fontWeight:900,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),_h("div",{style:{flex:1}},_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},a.text),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},a.detail)));}))));
+        if(strat.paare.length>0)rows.push(_h(Karte,{key:"p",titel:T.empfPartner,symbol:"🤝",farbe:L.acc},_h("div",{style:{display:"flex",flexDirection:"column",gap:9}},strat.paare.map(function(it,i){return _h("div",{key:i,style:{display:"flex",gap:12,alignItems:"center",padding:"10px 12px",background:L.inner,borderRadius:10,border:"1px solid "+it.pk.f+"33"}},_h("span",{style:{fontSize:18}},it.pk.s),_h("div",{style:{flex:1}},_h("div",{style:{display:"flex",gap:7,alignItems:"center",marginBottom:2}},_h("span",{style:{fontSize:13,fontWeight:800,color:it.pk.f}},it.pk.name),_h(TierBadge,{tier:it.pk.tier})),it.bes&&it.pkC?_h("div",{style:{fontSize:12,color:L.sub}},"Lv "+it.pkC.lv+" · "+T.sternBez[it.pkC.stern],it.pkC.stern<3?_h("span",{style:{color:L.red,fontWeight:700}}," "+T.mind3):_h("span",{style:{color:L.green,fontWeight:700}}," "+T.einsatzbereit)):_h("div",{style:{fontSize:12,color:L.red,fontWeight:700}},T.nichtSamml)));}))));
+        if(strat.pakete.length>0&&!strat.maxStern)rows.push(_h(Karte,{key:"po",titel:T.paketOpt,symbol:"📦",farbe:L.gold},_h("div",{style:{fontSize:12,color:L.sub,marginBottom:12,lineHeight:1.55}},T.paketInfo.replace("{name}",zK.name)),_h("div",{style:{display:"flex",flexDirection:"column",gap:9}},strat.pakete.map(function(pc,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"center",padding:"11px 12px",background:L.inner,borderRadius:10,border:"1px solid "+pc.p.f+"44",borderLeft:"3px solid "+pc.p.f}},_h("span",{style:{fontSize:16}},pc.k.s),_h("div",{style:{flex:1}},_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},pc.k.name+": Lv "+pc.kC.lv+" → "+pc.p.level),_h("div",{style:{fontSize:11,color:L.sub}},"~"+pc.kosten+" "+T.expBandeNeed+" → +"+pc.p.skulp+" "+T.skulpFor)),_h("div",{style:{textAlign:"right"}},_h("div",{style:{fontSize:18,fontWeight:900,color:pc.p.f}},(pc.roi>=20?"🔥":pc.roi>=8?"⭐":"💡")+" "+pc.p.skulp)));}))));
+      }
+      return _h("div",{style:{display:"flex",flexDirection:"column",gap:14}},rows);
+    }catch(e){return _h("div",{style:{color:L.red,padding:16}},"Fehler / Error: "+e.message);}
+  }
+
+  function renderTrup(){
+    try{
+      var rows=[_h("div",{key:"s",style:{background:"#fff",border:"1px solid "+L.border,borderRadius:14,padding:16,boxShadow:L.sh}},_h("div",{style:{fontSize:13,fontWeight:800,color:L.text,marginBottom:4}},T.welcheTrup),_h("div",{style:{fontSize:12,color:L.sub,marginBottom:14,lineHeight:1.5}},T.trupSub),_h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:10}},TRUPPENTYPEN.map(function(typ){var a=z.truppenTyp===typ.id;return _h("button",{key:typ.id,onClick:function(){set({truppenTyp:a?null:typ.id});},style:{padding:"14px 10px",borderRadius:12,textAlign:"center",border:"2px solid "+(a?typ.farbe:L.border),background:a?typ.farbe+"12":"#fff",boxShadow:a?"0 0 0 3px "+typ.farbe+"22":L.sh}},_h("div",{style:{fontSize:26,marginBottom:5}},typ.symbol),_h("div",{style:{fontSize:14,fontWeight:800,color:a?typ.farbe:L.text}},L2(typ.name)),_h("div",{style:{fontSize:10,color:L.mute,marginTop:3}},a?T.ausgewaehlt:T.tippeWaehlen));}))) ];
+      if(selTyp){var st=selTyp;
+        rows.push(_h("div",{key:"d",style:{background:"#fff",border:"2px solid "+st.farbe,borderRadius:14,padding:16}},_h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},_h("span",{style:{fontSize:28}},st.symbol),_h("div",null,_h("div",{style:{fontSize:20,fontWeight:900,color:st.farbe}},L2(st.name)),_h("div",{style:{display:"flex",gap:8,marginTop:3,flexWrap:"wrap"}},_h("span",{style:{fontSize:11,background:"#dcfce7",color:L.green,padding:"2px 9px",borderRadius:99,fontWeight:700}},T.stark+": "+L2(st.stark)),_h("span",{style:{fontSize:11,background:"#fee2e2",color:L.red,padding:"2px 9px",borderRadius:99,fontWeight:700}},T.schwach+": "+L2(st.schwach))))),_h("div",{style:{fontSize:13,color:L.sub,lineHeight:1.65,marginBottom:10}},L2(st.info)),_h("div",{style:{background:st.farbe+"0a",borderRadius:9,padding:"8px 12px",fontSize:12,color:L.sub,borderLeft:"3px solid "+st.farbe}},_h("strong",{style:{color:L.text}},T.talentFokus),L2(st.talent))));
+        var pk1=findKom(st.hauptPaar.p1),pk2=findKom(st.hauptPaar.p2);
+        rows.push(_h(Karte,{key:"hp",titel:T.metaHaupt,symbol:"🏅",farbe:st.farbe},_h("div",{style:{fontSize:11,color:st.farbe,fontWeight:800,marginBottom:10}},st.hauptPaar.q),_h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}},[{k:pk1,rolle:T.primaer},{k:pk2,rolle:T.sekundaer}].map(function(it,idx){var k=it.k;if(!k)return null;var bes=!!z.besitz[k.id],kC=bes?z.konfigs[k.id]:null;return _h("div",{key:idx,style:{background:bes?k.f+"0a":L.inner,border:"1.5px solid "+(bes?k.f:L.border),borderRadius:11,padding:"11px 13px"}},_h("div",{style:{fontSize:10,color:L.mute,textTransform:"uppercase",letterSpacing:1,marginBottom:5}},it.rolle),_h("div",{style:{display:"flex",alignItems:"center",gap:7,marginBottom:6}},_h("span",{style:{fontSize:20}},k.s),_h("div",null,_h("div",{style:{fontSize:13,fontWeight:800,color:k.f}},k.name),_h(TierBadge,{tier:k.tier}))),bes&&kC?_h("div",{style:{fontSize:12,color:L.sub}},"Lv "+kC.lv+" · "+T.sternBez[kC.stern],kC.stern<3?_h("div",{style:{color:L.red,fontWeight:700,fontSize:11,marginTop:3}},T.mind3):kC.stern>=5?_h("div",{style:{color:L.green,fontWeight:700,fontSize:11,marginTop:3}},T.einsatzbereit):null):_h("div",{style:{fontSize:12,color:L.red,fontWeight:700}},T.nichtSamml));})),_h("div",{style:{background:st.farbe+"0a",borderRadius:10,padding:"10px 13px",borderLeft:"3px solid "+st.farbe,fontSize:12,color:L.sub,lineHeight:1.6}},_h("strong",{style:{color:L.text}},T.warumPaar),L2(st.hauptPaar.e))));
+        rows.push(_h(Karte,{key:"ap",titel:T.altPaar,symbol:"🔄",farbe:L.blue},_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},st.altPaare.map(function(ap,i){var k1=findKom(ap.p1),k2=findKom(ap.p2);return _h("div",{key:i,style:{background:L.inner,borderRadius:10,padding:"11px 13px",border:"1px solid "+L.border}},_h("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:6,flexWrap:"wrap"}},k1&&_h("span",{style:{fontSize:16}},k1.s),k1&&_h("span",{style:{fontWeight:800,color:k1.f,fontSize:13}},k1.name),_h("span",{style:{color:L.mute}},"+"),k2&&_h("span",{style:{fontSize:16}},k2.s),k2&&_h("span",{style:{fontWeight:800,color:k2.f,fontSize:13}},k2.name),_h("span",{style:{fontSize:11,background:st.farbe+"15",color:st.farbe,padding:"2px 8px",borderRadius:99,fontWeight:700,marginLeft:"auto"}},ap.q)),_h("div",{style:{fontSize:12,color:L.sub,lineHeight:1.5,marginBottom:6}},L2(ap.e)),_h("div",{style:{display:"flex",gap:8,flexWrap:"wrap"}},[k1,k2].map(function(k,idx){if(!k)return null;var bes=!!z.besitz[k.id],kC=bes?z.konfigs[k.id]:null;return _h("span",{key:idx,style:{fontSize:11,padding:"3px 9px",borderRadius:99,fontWeight:700,background:bes?k.f+"15":"#fee2e2",color:bes?k.f:L.red,border:"1px solid "+(bes?k.f+"44":"#fecaca")}},(idx===0?T.primaer:T.sekundaer)+": "+(bes&&kC?"Lv "+kC.lv+" · "+T.sternBez[kC.stern]:T.fehlt));})));}))));
+        rows.push(_h(Karte,{key:"rf",titel:T.entwReihen,symbol:"📋",farbe:st.farbe},_h("div",{style:{fontSize:12,color:L.sub,marginBottom:12}},T.entwInfo.replace("{name}",L2(st.name))),_h("div",{style:{display:"flex",flexDirection:"column",gap:9}},st.reihenfolge.map(function(e,i){var k=findKom(e.id);if(!k)return null;var bes=!!z.besitz[k.id],kC=bes?z.konfigs[k.id]:null,fertig=bes&&kC&&kC.stern>=5;return _h("div",{key:i,style:{display:"flex",gap:12,alignItems:"flex-start",padding:"11px 13px",background:fertig?"#f0fdf4":bes?k.f+"0a":L.inner,borderRadius:10,border:"1.5px solid "+(fertig?"#86efac":bes?k.f+"44":L.border)}},_h("div",{style:{width:26,height:26,borderRadius:"50%",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center",background:fertig?L.green:bes?k.f:L.border,color:"#fff",fontSize:13,fontWeight:900}},fertig?"✓":i+1),_h("div",{style:{flex:1}},_h("div",{style:{display:"flex",alignItems:"center",gap:7,marginBottom:3,flexWrap:"wrap"}},_h("span",{style:{fontSize:16}},k.s),_h("span",{style:{fontSize:14,fontWeight:800,color:fertig?L.green:k.f}},k.name),_h(TierBadge,{tier:k.tier}),!bes&&_h("span",{style:{fontSize:11,color:L.red,fontWeight:700}},T.fehlt),bes&&kC&&_h("span",{style:{fontSize:11,color:L.sub}},"Lv "+kC.lv+" · "+T.sternBez[kC.stern])),_h("div",{style:{fontSize:12,color:L.sub,lineHeight:1.5}},L2(e.g))));}))));
+        var meine=st.geeignet.map(findKom).filter(function(k){return k&&z.besitz[k.id];});
+        if(meine.length>0)rows.push(_h(Karte,{key:"mk",titel:T.deineKomm.replace("{name}",L2(st.name)),symbol:st.symbol,farbe:st.farbe},_h("div",{style:{display:"flex",gap:8,flexWrap:"wrap"}},meine.map(function(k){var kC=z.konfigs[k.id]||leerK();return _h("div",{key:k.id,style:{background:k.f+"0d",border:"1.5px solid "+k.f+"55",borderRadius:10,padding:"8px 10px",textAlign:"center",minWidth:85}},_h("div",{style:{fontSize:18,marginBottom:2}},k.s),_h("div",{style:{fontSize:11,fontWeight:800,color:k.f}},k.name),_h(TierBadge,{tier:k.tier}),_h("div",{style:{fontSize:11,color:L.sub,marginTop:4}},"Lv "+kC.lv+" · "+T.sternBez[kC.stern]));}))));
+        rows.push(_h(Karte,{key:"tp",titel:T.tippsFor.replace("{name}",L2(st.name)),symbol:"💡",farbe:L.green},_h("div",{style:{display:"flex",flexDirection:"column",gap:9}},L2(st.tipps).map(function(tipp,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start"}},_h("div",{style:{width:5,height:5,borderRadius:"50%",background:st.farbe,marginTop:8,flexShrink:0}}),_h("div",{style:{fontSize:13,color:L.text,lineHeight:1.6}},tipp));}))));
+      }
+      return _h("div",{style:{display:"flex",flexDirection:"column",gap:14}},rows);
+    }catch(e){return _h("div",{style:{color:L.red,padding:16}},"Fehler / Error: "+e.message);}
+  }
+
+  function renderWoche(){
+    try{
+      var cards=T.wochenplan.map(function(w){var tot=w.ev.reduce(function(s,e){return s+e.s;},0);return _h("div",{key:w.w,style:{background:"#fff",border:"1px solid "+L.border,borderRadius:14,overflow:"hidden",boxShadow:L.sh}},_h("div",{style:{background:w.c+"0d",padding:"12px 16px",borderBottom:"1px solid "+L.border,display:"flex",justifyContent:"space-between",alignItems:"center"}},_h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:2,textTransform:"uppercase"}},T.woche+" "+w.w),_h("div",{style:{fontSize:14,fontWeight:800,color:w.c}},w.b)),_h("div",{style:{textAlign:"right"}},_h("div",{style:{fontSize:22,fontWeight:900,color:w.c}},"~"+tot),_h("div",{style:{fontSize:11,color:L.mute}},T.wocheUebersicht))),_h("div",{style:{padding:"12px 16px",display:"flex",flexDirection:"column",gap:10}},w.ev.map(function(ev,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start"}},_h("div",{style:{background:w.c+"15",color:w.c,fontSize:12,fontWeight:900,padding:"3px 8px",borderRadius:7,flexShrink:0,marginTop:1}},"+"+ev.s),_h("div",null,_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},ev.n),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},ev.t)));})));});
+      return _h("div",{style:{display:"flex",flexDirection:"column",gap:14}},cards,_h("div",{style:{background:"#f0fdf4",border:"1px solid #bbf7d0",borderRadius:12,padding:"11px 14px",textAlign:"center",fontSize:13,color:L.green,fontWeight:700}},T.gesamt169));
+    }catch(e){return _h("div",{style:{color:L.red,padding:16}},"Fehler / Error: "+e.message);}
+  }
+
+  function renderGloss(){
+    try{
+      return _h("div",null,_h("div",{style:{background:"#fff7ed",border:"1px solid "+L.gold+"44",borderRadius:12,padding:"11px 14px",marginBottom:14,display:"flex",gap:10}},_h("span",{style:{fontSize:18}},"📖"),_h("div",null,_h("div",{style:{fontSize:14,fontWeight:800,color:L.gold}},T.glossarTitel),_h("div",{style:{fontSize:12,color:L.sub,marginTop:2}},T.glossarSub))),_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},GLOSSAR.map(function(g,i){return _h("div",{key:i,style:{background:"#fff",border:"1px solid "+L.border,borderRadius:13,overflow:"hidden",boxShadow:L.sh}},_h("div",{style:{background:L.inner,padding:"10px 14px",borderBottom:"1px solid "+L.border,display:"flex",alignItems:"center",gap:9}},_h("span",{style:{fontSize:20}},g.s),_h("span",{style:{fontSize:14,fontWeight:800,color:L.text}},L2(g.b))),_h("div",{style:{padding:"11px 14px",fontSize:13,color:L.sub,lineHeight:1.7}},L2(g.t)));})));
+    }catch(e){return _h("div",{style:{color:L.red,padding:16}},"Fehler / Error: "+e.message);}
+  }
+
+  var content=z.tab==="kommandanten"?renderKomm():z.tab==="strategie"?renderStrat():z.tab==="truppentypen"?renderTrup():z.tab==="wochenplan"?renderWoche():renderGloss();
+
+  return _h("div",{style:{minHeight:"100vh",background:L.bg,color:L.text,paddingBottom:60}},
+    showEI&&_h(EIModal,{z:z,gE:gE,gG:gG,gB:gB,lang:lang,onImport:doImport,onClose:function(){setShowEI(false);}}),
+    showCloud&&_h(CloudModal,{lang:lang,cfg:cloudCfg,data:function(){return {besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang};},onImport:doImport,onConnected:function(c){setCloudCfg(c);setCloudGeladen(true);},onDisconnect:function(){setCloudCfg(null);},onClose:function(){setShowCloud(false);}}),
+    toast&&_h("div",{className:"toast"},toast),
+    // Header
+    _h("div",{style:{background:"#fff",borderBottom:"1px solid "+L.border,padding:"12px 16px 10px",boxShadow:L.sh}},
+      _h("div",{style:{maxWidth:920,margin:"0 auto",display:"flex",justifyContent:"space-between",alignItems:"flex-start",flexWrap:"wrap",gap:8}},
+        _h("div",null,
+          _h("div",{style:{fontSize:10,letterSpacing:4,color:L.gold,fontWeight:800,textTransform:"uppercase"}},T.kicker),
+          _h("div",{style:{fontSize:18,fontWeight:900,color:L.text}},T.appTitle),
+          _h("div",{style:{fontSize:9,color:L.mute,marginTop:1}},T.version),
+          _h("div",{style:{display:"inline-block",fontSize:9,fontWeight:800,color:cloudCfg?L.green:L.blue,background:(cloudCfg?L.green:L.blue)+"15",border:"1px solid "+(cloudCfg?L.green:L.blue)+"44",borderRadius:99,padding:"1px 8px",marginTop:3}},cloudCfg?T.cloudConnected+" · "+T.cloudBadge:T.cloudBadge),
+          _h("div",{style:{fontSize:11,color:L.sub,marginTop:2}},besessen.length+" "+T.nKomm,status&&_h("span",{style:{color:status[0]==="✓"?L.green:L.mute}}," · "+status))
+        ),
+        _h("div",{style:{display:"flex",flexDirection:"column",gap:6,alignItems:"flex-end"}},
+          // Sprache + Buttons
+          _h("div",{style:{display:"flex",gap:6,alignItems:"center"}},
+            _h("button",{onClick:function(){setLang("de");},style:{padding:"5px 10px",borderRadius:8,border:"1.5px solid "+(lang==="de"?L.blue:L.border),background:lang==="de"?L.blue+"15":"#fff",color:lang==="de"?L.blue:L.mute,fontSize:12,fontWeight:800}},"🇩🇪 DE"),
+            _h("button",{onClick:function(){setLang("en");},style:{padding:"5px 10px",borderRadius:8,border:"1.5px solid "+(lang==="en"?L.blue:L.border),background:lang==="en"?L.blue+"15":"#fff",color:lang==="en"?L.blue:L.mute,fontSize:12,fontWeight:800}},"🇬🇧 EN")
+          ),
+          _h("div",{style:{background:L.goldBg,border:"1.5px solid "+L.gold+"66",borderRadius:12,padding:"6px 10px"}},
+            _h("div",{style:{fontSize:9,color:L.gold,fontWeight:800,textTransform:"uppercase",marginBottom:4,textAlign:"center"}},T.univSkulp+" · "+starExp+" "+T.univExp),
+            _h("div",{style:{display:"flex",gap:8,alignItems:"flex-end",justifyContent:"center"}},
+              [[T.univEinzeln,gE,setGE,"100"],[T.univGesegnet,gG,setGG,"400"],[T.univBuendel,gB,setGB,"800"]].map(function(it){
+                return _h("div",{key:it[0],style:{display:"flex",flexDirection:"column",alignItems:"center"}},
+                  _h("div",{style:{fontSize:8,color:"#92400e",fontWeight:700,marginBottom:1}},it[0]),
+                  _h("input",{type:"number",min:0,max:9999,value:it[1],title:it[0]+" ("+it[3]+" EXP)",onChange:(function(setter){return function(e){setter(Math.max(0,parseInt(e.target.value)||0));};})(it[2]),style:{width:46,textAlign:"center",border:"1.5px solid "+L.gold,borderRadius:6,fontSize:15,fontWeight:900,color:L.gold,padding:"3px 0",background:"#fff"}})
+                );
+              })
+            )
+          ),
+          _h("div",{style:{display:"flex",gap:6}},
+            _h("button",{onClick:manualSave,style:{padding:"5px 12px",background:L.green,border:"none",borderRadius:9,color:"#fff",fontSize:11,fontWeight:700}},T.btnSave),
+            _h("button",{onClick:function(){setShowCloud(true);},style:{padding:"5px 12px",background:cloudCfg?L.green+"15":"#fff",border:"1.5px solid "+(cloudCfg?L.green:L.gold),borderRadius:9,color:cloudCfg?L.green:L.gold,fontSize:11,fontWeight:700}},T.cloudBtn),
+            _h("button",{onClick:function(){setShowEI(true);},style:{padding:"5px 12px",background:"#fff",border:"1.5px solid "+L.blue,borderRadius:9,color:L.blue,fontSize:11,fontWeight:700}},T.btnEI)
+          )
+        )
+      )
+    ),
+    // Tabs
+    _h("div",{className:"scrollx",style:{background:"#fff",borderBottom:"1px solid "+L.border,display:"flex",padding:"0 8px"}},
+      TABS.map(function(t){return _h("button",{key:t.id,onClick:function(){set({tab:t.id});},style:{background:"none",border:"none",borderBottom:z.tab===t.id?"2.5px solid "+L.gold:"2.5px solid transparent",color:z.tab===t.id?L.gold:L.sub,padding:"11px 13px",fontSize:12,fontWeight:700,whiteSpace:"nowrap"}},T.tabs[t.id]);})
+    ),
+    _h("div",{style:{padding:14,maxWidth:920,margin:"0 auto"}},content)
+  );
+}
+
+var PW_HASH="1e396cfbb13b3553e90102cf98f1b28f5922ead5212c2a224ea6d127fec545b7";
+var AUTH_KEY="rok-auth-v1";
+function sha256js(ascii){function rr(v,a){return (v>>>a)|(v<<(32-a));}var mp=Math.pow,mw=mp(2,32),result="";var words=[],abl=ascii.length*8;var hash=sha256js.h=sha256js.h||[],k=sha256js.k=sha256js.k||[],pc=k.length;var isC={};for(var cand=2;pc<64;cand++){if(!isC[cand]){for(var i=0;i<313;i+=cand)isC[i]=cand;hash[pc]=(mp(cand,.5)*mw)|0;k[pc++]=(mp(cand,1/3)*mw)|0;}}ascii+="\x80";while(ascii.length%64-56)ascii+="\x00";for(var i=0;i<ascii.length;i++){var j=ascii.charCodeAt(i);if(j>>8)return;words[i>>2]|=j<<((3-i)%4)*8;}words[words.length]=((abl/mw)|0);words[words.length]=(abl);for(var j=0;j<words.length;){var w=words.slice(j,j+=16),oldHash=hash;hash=hash.slice(0,8);for(var i=0;i<64;i++){var w15=w[i-15],w2=w[i-2];var a=hash[0],e=hash[4];var t1=hash[7]+(rr(e,6)^rr(e,11)^rr(e,25))+((e&hash[5])^((~e)&hash[6]))+k[i]+(w[i]=(i<16)?w[i]:(w[i-16]+(rr(w15,7)^rr(w15,18)^(w15>>>3))+w[i-7]+(rr(w2,17)^rr(w2,19)^(w2>>>10)))|0);var t2=(rr(a,2)^rr(a,13)^rr(a,22))+((a&hash[1])^(a&hash[2])^(hash[1]&hash[2]));hash=[(t1+t2)|0].concat(hash);hash[4]=(hash[4]+t1)|0;}for(var i=0;i<8;i++)hash[i]=(hash[i]+oldHash[i])|0;}for(var i=0;i<8;i++)for(var j=3;j+1;j--){var b=(hash[i]>>(j*8))&255;result+=((b<16)?0:"")+b.toString(16);}return result;}
+function pwHash(s){var msg="rok-gate::"+s;if(window.crypto&&window.crypto.subtle&&window.isSecureContext){return crypto.subtle.digest("SHA-256",new TextEncoder().encode(msg)).then(function(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return ("0"+b.toString(16)).slice(-2);}).join("");});}return Promise.resolve(sha256js(unescape(encodeURIComponent(msg))));}
+function pwStored(){try{return localStorage.getItem(AUTH_KEY)===PW_HASH;}catch(e){return false;}}
+function Gate(){
+  var a=useState(pwStored());var authed=a[0],setAuthed=a[1];
+  var p=useState("");var pw=p[0],setPw=p[1];
+  var er=useState("");var err=er[0],setErr=er[1];
+  function submit(){if(!pw)return;pwHash(pw).then(function(h){if(h===PW_HASH){try{localStorage.setItem(AUTH_KEY,h);}catch(_){}setAuthed(true);}else{setErr("Falsches Passwort \u00b7 Wrong password");setPw("");}});}
+  if(authed)return _h(App,null);
+  return _h("div",{style:{minHeight:"100vh",background:"#f0f4f8",display:"flex",alignItems:"center",justifyContent:"center",padding:16,fontFamily:"-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"}},
+    _h("div",{style:{background:"#fff",borderRadius:16,padding:"30px 24px",maxWidth:340,width:"100%",boxShadow:"0 10px 40px rgba(0,0,0,.12)",textAlign:"center"}},
+      _h("div",{style:{fontSize:36,marginBottom:10}},"\U0001F512"),
+      _h("div",{style:{fontSize:18,fontWeight:900,color:"#1e293b",marginBottom:4}},"RoK Kommandantenrechner"),
+      _h("div",{style:{fontSize:13,color:"#475569",marginBottom:18}},"Passwort eingeben \u00b7 Enter password"),
+      _h("input",{type:"password",value:pw,autoFocus:true,onChange:function(ev){setPw(ev.target.value);setErr("");},onKeyDown:function(ev){if(ev.key==="Enter")submit();},placeholder:"\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022",style:{width:"100%",boxSizing:"border-box",padding:"12px",fontSize:16,border:"1.5px solid "+(err?"#dc2626":"#e2e8f0"),borderRadius:10,marginBottom:10,textAlign:"center",outline:"none"}}),
+      err?_h("div",{style:{fontSize:12.5,color:"#dc2626",marginBottom:10,fontWeight:700}},err):null,
+      _h("button",{onClick:submit,style:{width:"100%",padding:"12px",background:"#d97706",color:"#fff",border:"none",borderRadius:10,fontSize:15,fontWeight:800,cursor:"pointer"}},"Entsperren \u00b7 Unlock")
+    )
+  );
+}
+ReactDOM.createRoot(document.getElementById("root")).render(_h(Gate,null));
+</script>
+</body>
+</html>
