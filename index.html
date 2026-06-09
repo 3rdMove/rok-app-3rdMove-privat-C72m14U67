@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 2.6",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 2.7",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -50,7 +50,7 @@ var TXT={
     waehleZiel:"Wähle oben einen Zielkommandanten aus.",
     zielkomm:"Zielkommandant",gesamtfort:"Gesamtfortschritt",
     expBaende:"EXP-Bände",sterne:"Sterne",metaInfo:"Meta-Info: ",
-    aktionsplan:"Aktionsplan",vollstaendig:"🎉 Vollständig entwickelt!",
+    aktionsplan:"Aktionsplan",capInfo:"Grenze: Lv {c}",capReached:"⬆ Hochsternen auf {s}★ nötig",skulpSkills:"für Skills",vollstaendig:"🎉 Vollständig entwickelt!",
     empfPartner:"Empfohlene Paarungspartner",mind3:"⚠ Mind. 3★!",einsatzbereit:"✓ Einsatzbereit",nichtSamml:"✗ Noch nicht in deiner Sammlung",
     paketOpt:"Paket-Optimierer",paketInfo:"Bringe diese Kommandanten auf das Level → Paket freischalten → Skulpturen für {name}.",
     expBandeNeed:"EXP-Bände",skulpFor:"Skulpturen",
@@ -72,7 +72,7 @@ var TXT={
     eiCopied:"✓ Kopiert! Auf dem anderen Gerät 'Importieren' wählen.",eiInvalid:"Ungültige Daten.",
     savedToast:"✓ Gespeichert!",
     cloudBtn:"☁️ Cloud-Sync",cloudBadge:"☁️ Cloud-Sync-Variante",cloudTitel:"☁️ Cloud-Synchronisation",cloudInfo:"Synchronisiere denselben Datenstand über alle Geräte – über dein eigenes kostenloses Backend. Daten bleiben zusätzlich lokal gespeichert (offline nutzbar).",cloudProvider:"Anbieter wählen:",cloudUrlSb:"Supabase Projekt-URL (https://xxxxx.supabase.co)",cloudKeySb:"Supabase anon public Key",cloudUrlFb:"Firebase Realtime-DB URL (https://xxxxx.firebaseio.com)",cloudSync:"Sync-Code (frei wählbar, auf allen Geräten gleich)",cloudConnUp:"Verbinden & Hochladen",cloudConnDown:"Verbinden & Herunterladen",cloudDisc:"Verbindung trennen",cloudConnected:"✓ Verbunden",cloudUploaded:"✓ Hochgeladen",cloudDownloaded:"✓ Heruntergeladen",cloudErr:"⚠ Fehler – Eingaben/Backend prüfen",cloudNoData:"Keine Cloud-Daten unter diesem Sync-Code gefunden.",cloudSetup:"▸ Einrichtung anzeigen (einmalig)",cloudSetupSb:"Supabase: 1) Konto auf supabase.com · 2) Neues Projekt · 3) SQL-Editor → Tabelle anlegen (SQL unten) · 4) Settings → API → Project URL und anon public key kopieren.",cloudSql:"create table rok_sync (id text primary key, data jsonb, updated_at timestamptz); alter table rok_sync enable row level security; create policy p on rok_sync for all using (true) with check (true);",cloudSetupFb:"Firebase: 1) Konto auf firebase.google.com · 2) Projekt anlegen · 3) Realtime Database erstellen · 4) Regeln auf {\".read\":true,\".write\":true} (nur für privaten Test) · 5) Datenbank-URL kopieren.",cloudWarn:"Hinweis: Mit offenen Regeln kann jeder mit Sync-Code + URL zugreifen. Für privaten Gebrauch ok; sonst Zugriffsregeln einschränken.",
-    sternBez:["1★","2★","3★","4★","5★","Exp 1","Exp 2","Exp 3","Exp 4","Meister"],
+    sternBez:["1★","2★","3★","4★","5★","6★"],
     wochenplan:[
       {w:1,c:"#d97706",b:"Mightiest Governor – Phase 1",ev:[{n:"Mightiest Governor",s:25,t:"Power durch Bauen/Forschen. Erst beim Event-Start freischalten!"},{n:"Allianz-Events",s:8,t:"Truhen öffnen, Hilfen geben."},{n:"Tägliche Aufgaben & VIP",s:4,t:"Täglich erledigen."}]},
       {w:2,c:"#1d4ed8",b:"Ceroli Crisis + Arche des Osiris",ev:[{n:"Ceroli Crisis",s:15,t:"Alle 5 Phasen abschließen."},{n:"Arche des Osiris",s:12,t:"Alle 3 Phasen mitspielen."},{n:"Allianz + Täglich",s:12,t:"Beiträge und Aufgaben."}]},
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 2.6",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 2.7",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -94,7 +94,7 @@ var TXT={
     waehleZiel:"Choose a target commander above.",
     zielkomm:"Target commander",gesamtfort:"Overall progress",
     expBaende:"XP tomes",sterne:"Stars",metaInfo:"Meta info: ",
-    aktionsplan:"Action plan",vollstaendig:"🎉 Fully developed!",
+    aktionsplan:"Action plan",capInfo:"Cap: Lv {c}",capReached:"⬆ Star up to {s}★ needed",skulpSkills:"for skills",vollstaendig:"🎉 Fully developed!",
     empfPartner:"Recommended pairing partners",mind3:"⚠ Min. 3★!",einsatzbereit:"✓ Ready",nichtSamml:"✗ Not yet in your collection",
     paketOpt:"Bundle optimizer",paketInfo:"Bring these commanders to the level → unlock bundle → sculptures for {name}.",
     expBandeNeed:"XP tomes",skulpFor:"sculptures",
@@ -116,7 +116,7 @@ var TXT={
     eiCopied:"✓ Copied! Choose 'Import' on the other device.",eiInvalid:"Invalid data.",
     savedToast:"✓ Saved!",
     cloudBtn:"☁️ Cloud Sync",cloudBadge:"☁️ Cloud Sync Edition",cloudTitel:"☁️ Cloud Synchronisation",cloudInfo:"Sync the same data across all devices – via your own free backend. Data is also stored locally (works offline).",cloudProvider:"Choose provider:",cloudUrlSb:"Supabase project URL (https://xxxxx.supabase.co)",cloudKeySb:"Supabase anon public key",cloudUrlFb:"Firebase Realtime DB URL (https://xxxxx.firebaseio.com)",cloudSync:"Sync code (free choice, same on all devices)",cloudConnUp:"Connect & Upload",cloudConnDown:"Connect & Download",cloudDisc:"Disconnect",cloudConnected:"✓ Connected",cloudUploaded:"✓ Uploaded",cloudDownloaded:"✓ Downloaded",cloudErr:"⚠ Error – check inputs/backend",cloudNoData:"No cloud data found for this sync code.",cloudSetup:"▸ Show setup (one-time)",cloudSetupSb:"Supabase: 1) Account at supabase.com · 2) New project · 3) SQL editor → create table (SQL below) · 4) Settings → API → copy Project URL and anon public key.",cloudSql:"create table rok_sync (id text primary key, data jsonb, updated_at timestamptz); alter table rok_sync enable row level security; create policy p on rok_sync for all using (true) with check (true);",cloudSetupFb:"Firebase: 1) Account at firebase.google.com · 2) Create project · 3) Create Realtime Database · 4) Rules to {\".read\":true,\".write\":true} (private test only) · 5) Copy database URL.",cloudWarn:"Note: With open rules anyone with sync code + URL can access. Fine for private use; otherwise restrict access rules.",
-    sternBez:["1★","2★","3★","4★","5★","Exp 1","Exp 2","Exp 3","Exp 4","Master"],
+    sternBez:["1★","2★","3★","4★","5★","6★"],
     wochenplan:[
       {w:1,c:"#d97706",b:"Mightiest Governor – Phase 1",ev:[{n:"Mightiest Governor",s:25,t:"Gather power by building/researching. Only activate at event start!"},{n:"Alliance events",s:8,t:"Open chests, give help."},{n:"Daily tasks & VIP",s:4,t:"Complete daily."}]},
       {w:2,c:"#1d4ed8",b:"Ceroli Crisis + Ark of Osiris",ev:[{n:"Ceroli Crisis",s:15,t:"Complete all 5 phases."},{n:"Ark of Osiris",s:12,t:"Play all 3 phases."},{n:"Alliance + Daily",s:12,t:"Contributions and tasks."}]},
@@ -222,7 +222,10 @@ var GLOSSAR=[
   {s:"🔄",b:{de:"Export / Import",en:"Export / Import"},t:{de:"Daten per JSON-Text zwischen Geräten übertragen.",en:"Transfer data between devices via JSON text."}}
 ];
 
-var STERN_KOSTEN=[10,20,30,50,50],EXPERTISE_KOST=[50,50,50,60],MAX_STERN=9;
+var STERN_KOSTEN=[10,20,30,50,50],EXPERTISE_KOST=[50,50,50,60],MAX_STERN=5;
+function levelCap(s){return Math.min(60,(Math.max(0,Math.min(5,s))+1)*10);}
+var STAR_EXP_KOST=[1500,3000,6500,16000,30000];
+function starExpBen(von,bis){var x=0;for(var i=Math.max(0,von);i<bis;i++)x+=STAR_EXP_KOST[i]||0;return x;}
 function skulpBen(von,bis){var s=0;for(var i=von;i<bis;i++)s+=i<5?STERN_KOSTEN[i]:EXPERTISE_KOST[i-5];return s;}
 var EXP_TAB=[[1,0],[5,0.02],[10,0.1],[15,0.3],[20,1],[25,2],[30,4],[35,7],[40,12],[45,20],[50,30],[55,50],[60,80]];
 function expKum(lv){lv=Math.max(1,Math.min(60,lv));for(var i=1;i<EXP_TAB.length;i++){var a=EXP_TAB[i-1],b=EXP_TAB[i];if(lv<=b[0]){var t=(lv-a[0])/(b[0]-a[0]);return a[1]+t*(b[1]-a[1]);}}return 80;}
@@ -234,6 +237,8 @@ var L={bg:"#f0f4f8",card:"#fff",inner:"#f8fafc",border:"#e2e8f0",text:"#1e293b",
 
 var LS_KEY="rok-v4";
 function leerK(){return {lv:1,stern:0,skulp:0};}
+function normK(c){if(!c)return leerK();var lv=Math.max(1,Math.min(60,c.lv||1));var st=(c.stern||0);st=st<=4?st:5;var byLv=Math.ceil(lv/10)-1;st=Math.min(5,Math.max(st,byLv));lv=Math.min(lv,levelCap(st));return {lv:lv,stern:st,skulp:Math.max(0,c.skulp||0)};}
+function buildKonfigs(src){var o={};KOM.forEach(function(k){o[k.id]=normK((src||{})[k.id]);});return o;}
 function ladeDaten(){try{var r=localStorage.getItem(LS_KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
 function speichereDaten(d){try{localStorage.setItem(LS_KEY,JSON.stringify(d));return true;}catch(e){return false;}}
 
@@ -269,42 +274,41 @@ function findKom(id){for(var i=0;i<KOM.length;i++)if(KOM[i].id===id)return KOM[i
 // Helfer-Komponenten
 function TierBadge(p){var t=TIER_META[p.tier]||TIER_META.C;return _h("span",{style:{background:t.bg,color:t.farbe,fontSize:11,fontWeight:800,padding:"2px 7px",borderRadius:99,border:"1px solid "+t.farbe+"44"}},p.tier);}
 function Bar(p){var pct=p.max>0?Math.min(100,(p.wert/p.max)*100):0;return _h("div",{style:{background:L.border,borderRadius:99,height:p.h||8,overflow:"hidden"}},_h("div",{style:{width:pct+"%",height:"100%",background:"linear-gradient(90deg,"+p.farbe+"99,"+p.farbe+")",borderRadius:99,transition:"width .4s"}}));}
-function Sterne(p){var n=Math.min(p.level,4)+1,exp=Math.max(0,p.level-4),c=[];for(var i=0;i<n;i++)c.push(_h("span",{key:i,style:{fontSize:p.gr||14,color:p.farbe,lineHeight:1}},"★"));if(exp>0)c.push(_h("span",{key:"e",style:{fontSize:9,background:p.farbe,color:"#fff",padding:"1px 5px",borderRadius:99,marginLeft:2,fontWeight:800}},"EXP"+exp));return _h("span",{style:{display:"inline-flex",alignItems:"center",gap:2}},c);}
+function Sterne(p){var n=Math.min((p.level||0)+1,6),c=[];for(var i=0;i<6;i++)c.push(_h("span",{key:i,style:{fontSize:p.gr||14,color:i<n?p.farbe:"#d1d5db",lineHeight:1}},"★"));return _h("span",{style:{display:"inline-flex",alignItems:"center",gap:1}},c);}
 function Karte(p){var f=p.farbe||L.blue;return _h("div",{style:{background:L.card,border:"1px solid "+L.border,borderRadius:14,overflow:"hidden",boxShadow:L.sh}},_h("div",{style:{background:f+"0d",padding:"11px 16px",borderBottom:"1px solid "+L.border,display:"flex",alignItems:"center",gap:8}},p.symbol&&_h("span",{style:{fontSize:16}},p.symbol),_h("span",{style:{fontSize:13,fontWeight:800,color:f}},p.titel)),_h("div",{style:{padding:"14px 16px"}},p.children));}
 
 // Strategie
-function calcStrategie(zielId,konfigs,besitz,gold,lang){
+function calcStrategie(zielId,konfigs,besitz,gold,starExp,lang){
   try{
     var T=TXT[lang];
     var zK=findKom(zielId); if(!zK)return null;
     var zC=konfigs[zielId]; if(!zC)return null;
-    var expBis60=expB(zC.lv,60),skulpMax=skulpBen(zC.stern,MAX_STERN);
-    var eigene=zC.skulp,gesamt=eigene+gold,fehlt=Math.max(0,skulpMax-gesamt);
-    var lv60=zC.lv>=60,maxStern=zC.stern>=MAX_STERN;
-    var fort=Math.round(((zC.lv/60)*50+(zC.stern/MAX_STERN)*50));
-    var pakete=[];
-    KOM.forEach(function(k){if(k.id===zielId||!besitz[k.id])return;var kC=konfigs[k.id];if(!kC)return;var p=nP(kC.lv);if(!p)return;var diff=p.level-kC.lv,kosten=expB(kC.lv,p.level),roi=kosten>0?Math.round(p.skulp/kosten*10)/10:999;pakete.push({k:k,kC:kC,p:p,diff:diff,kosten:kosten,roi:roi});});
-    pakete.sort(function(a,b){return b.roi-a.roi;});pakete=pakete.slice(0,4);
+    var de=lang==="de",nm=zK.name,SB=T.sternBez;
+    var lv=zC.lv,stern=zC.stern;
+    var lv60=lv>=60&&stern>=5, maxStern=stern>=5;
+    var fort=Math.round(((lv/60)*50+(stern/5)*50));
+    var expBis60=expB(lv,60), starExpNoetig=starExpBen(stern,5), deckt=starExp>=starExpNoetig;
+    var akt=[],cl=lv,cs=stern,guard=0;
+    while(!(cl>=60&&cs>=5)&&guard++<20){
+      var cap=levelCap(cs);
+      if((cs>=5&&cl<60)||cl<cap){
+        var ziel=(cs>=5)?60:cap;
+        if(cl<ziel){var bd=expB(cl,ziel);
+          akt.push({typ:"level",text:(de?"Leveln: "+cl+" → "+ziel:"Level: "+cl+" → "+ziel),detail:(de?"EXP-Bände an "+nm+" verfüttern – ca. "+bd+" Bände (à 50.000 XP, Schätzwert). EXP-Bände sind universell; stecke sie nur in "+nm+".":"Feed XP tomes to "+nm+" – about "+bd+" tomes (50,000 XP each, estimate). XP tomes are universal; put them only into "+nm+"."),f:L.blue});
+          cl=ziel;continue;}
+      }
+      if(cs<5){var ks=STAR_EXP_KOST[cs]||0;
+        akt.push({typ:"stern",text:(de?"Sternsprung: "+(cs+1)+"★ → "+(cs+2)+"★":"Star up: "+(cs+1)+"★ → "+(cs+2)+"★"),detail:(de?"Pflicht-Gate: ohne diesen Stern kommt "+nm+" nicht über Level "+levelCap(cs)+". Kosten ca. "+ks.toLocaleString("de")+" Star-EXP aus universellen Sternen (Schätzwert). Quellen: VIP 10+, KvK, Arche des Osiris, Events, Kaufpakete.":"Mandatory gate: without this star "+nm+" cannot pass level "+levelCap(cs)+". Costs about "+ks.toLocaleString("en")+" star EXP from universal stars (estimate). Sources: VIP 10+, KvK, Ark of Osiris, events, bundles."),f:L.gold});
+        cs++;}
+      else break;
+    }
     var paare=[];(zK.p||[]).forEach(function(pid){var pk=findKom(pid);if(!pk)return;var bes=!!besitz[pid];paare.push({pk:pk,bes:bes,pkC:bes?konfigs[pid]:null});});
-    var akt=[];
-    var nm=zK.name,SB=T.sternBez,de=lang==="de";
-    if(!lv60){
-      akt.push({pri:1,text:(de?nm+" leveln: "+zC.lv+" \u2192 60":"Level "+nm+": "+zC.lv+" \u2192 60"),detail:(de?"Verf\u00fcttere alle EXP-B\u00e4nde an "+nm+" \u2013 ca. "+expBis60+" B\u00e4nde (\u00e0 50.000 XP). Wichtig: EXP-B\u00e4nde sind universell und kommen NICHT von anderen Kommandanten. Stecke sie jetzt ausschlie\u00dflich in "+nm+", bis Level 60 erreicht ist.":"Feed all XP tomes to "+nm+" \u2013 about "+expBis60+" tomes (50,000 XP each). Note: XP tomes are universal and do NOT come from other commanders. Put them only into "+nm+" until level 60."),f:L.blue});
-      var npz=nP(zC.lv);
-      if(npz)akt.push({pri:2,text:(de?"Bei Level "+npz.level+" das Paket mitnehmen":"Grab the bundle at level "+npz.level),detail:(de?"Sobald "+nm+" Level "+npz.level+" erreicht, erscheint im Shop ein Paket (+"+npz.skulp+" Skulpturen). Mitnehmen, bevor du weiterlevelst.":"Once "+nm+" reaches level "+npz.level+", a shop bundle appears (+"+npz.skulp+" sculptures). Grab it before leveling on."),f:"#2563eb"});
-    }
-    if(!maxStern){
-      if(gold>0)akt.push({pri:3,text:(de?"Universelle Sterne in "+nm+" stecken ("+gold+" verf\u00fcgbar)":"Put universal stars into "+nm+" ("+gold+" available)"),detail:(de?"Reihenfolge: gesegnete zuerst (h\u00f6chstes Gl\u00fcck f\u00fcr den entscheidenden Stern-Wurf), dann B\u00fcndel (meiste EXP), zuletzt einzelne zum Auff\u00fcllen.":"Order: blessed first (highest luck for the decisive star roll), then bundles (most XP), finally singles to top up."),f:L.gold});
-      if(fehlt>0)akt.push({pri:4,text:(de?"Noch "+fehlt+" Skulpturen f\u00fcr "+nm+" sammeln":"Collect "+fehlt+" more sculptures for "+nm),detail:(de?"Stand: "+gesamt+" von "+skulpMax+" bis Meister. Quellen: KvK-Ehrenshop, Wheel of Fortune, Mightiest-Governor- & Ceroli-Events, Expeditionsshop.":"Status: "+gesamt+" of "+skulpMax+" to Master. Sources: KvK honor shop, Wheel of Fortune, Mightiest Governor & Ceroli events, expedition shop."),f:L.acc});
-      else akt.push({pri:4,text:(de?nm+" hat genug Skulpturen \u2013 jetzt aufwerten!":nm+" has enough sculptures \u2013 upgrade now!"),detail:(de?"Vorhanden: "+gesamt+" (Ziel "+skulpMax+"). Werte die Sterne direkt im Spiel auf.":"Have "+gesamt+" (goal "+skulpMax+"). Upgrade the stars directly in the game."),f:L.green});
-    }
     paare.forEach(function(it){
-      if(!it.bes)akt.push({pri:5,text:(de?"Partner freischalten: "+it.pk.name:"Unlock partner: "+it.pk.name),detail:(de?"Bestes Paar mit "+nm+". Solange er fehlt, entfaltet das Paar nicht seine volle St\u00e4rke.":"Best pair with "+nm+". While missing, the pair lacks full strength."),f:L.red});
-      else if(it.pkC&&it.pkC.stern<3)akt.push({pri:6,text:(de?"Partner "+it.pk.name+" auf 3\u2605 bringen":"Bring partner "+it.pk.name+" to 3\u2605"),detail:(de?"Aktuell "+SB[it.pkC.stern]+". Als Sekund\u00e4r sollte er mindestens 3\u2605 haben (f\u00fcr die wichtigsten Buffs).":"Currently "+SB[it.pkC.stern]+". As secondary he should be at least 3\u2605 (for the key buffs)."),f:"#6d28d9"});
+      if(!it.bes)akt.push({typ:"partner",text:(de?"Partner freischalten: "+it.pk.name:"Unlock partner: "+it.pk.name),detail:(de?"Bestes Paar mit "+nm+". Solange er fehlt, entfaltet das Paar nicht seine volle Stärke.":"Best pair with "+nm+". While missing, the pair lacks full strength."),f:L.red});
+      else if(it.pkC&&it.pkC.stern<2)akt.push({typ:"partner",text:(de?"Partner "+it.pk.name+" auf 3★ bringen":"Bring "+it.pk.name+" to 3★"),detail:(de?"Aktuell "+SB[it.pkC.stern]+". Ab 3★ kann er als Sekundär mitgeführt werden.":"Currently "+SB[it.pkC.stern]+". From 3★ he can join as secondary."),f:"#6d28d9"});
     });
-    if(lv60&&maxStern)akt.push({pri:0,text:(de?nm+" ist voll entwickelt!":nm+" is fully developed!"),detail:(de?"Level 60 und Meister erreicht. Setze als N\u00e4chstes einen Partner oder einen neuen Zielkommandanten.":"Level 60 and Master reached. Set a partner or a new target next."),f:L.green});
-    akt.sort(function(a,b){return a.pri-b.pri;});
-    return {zK:zK,zC:zC,expBis60:expBis60,skulpMax:skulpMax,eigene:eigene,gesamt:gesamt,fehlt:fehlt,lv60:lv60,maxStern:maxStern,fort:fort,pakete:pakete,paare:paare,akt:akt};
+    if(lv60&&maxStern&&akt.length===0)akt.push({typ:"done",text:(de?nm+" ist voll entwickelt!":nm+" is fully developed!"),detail:(de?"Level 60 und 6★ erreicht. Setze als Nächstes einen Partner oder ein neues Ziel.":"Level 60 and 6★ reached. Set a partner or a new target next."),f:L.green});
+    return {zK:zK,zC:zC,lv60:lv60,maxStern:maxStern,fort:fort,expBis60:expBis60,starExpNoetig:starExpNoetig,starExpHabe:starExp,deckt:deckt,paare:paare,akt:akt,stern:stern};
   }catch(e){return null;}
 }
 
@@ -374,7 +378,7 @@ var INIT_KONFIGS={};KOM.forEach(function(k){INIT_KONFIGS[k.id]=leerK();});
 
 function App(){
   var saved=ladeDaten()||{};
-  var zArr=useState({besitz:saved.besitz||{},konfigs:Object.assign({},INIT_KONFIGS,saved.konfigs||{}),zielId:saved.zielId||null,truppenTyp:saved.truppenTyp||null,tab:"kommandanten"});
+  var zArr=useState({besitz:saved.besitz||{},konfigs:buildKonfigs(saved.konfigs),zielId:saved.zielId||null,truppenTyp:saved.truppenTyp||null,tab:"kommandanten"});
   var z=zArr[0],setZ=zArr[1];
   var geArr=useState(saved.sterneEinzeln||saved.goldSterne||0);var gE=geArr[0],setGE=geArr[1];
   var ggArr=useState(saved.sterneGesegnet||0);var gG=ggArr[0],setGG=ggArr[1];
@@ -412,10 +416,10 @@ function App(){
   function set(p){setZ(function(prev){return Object.assign({},prev,p);});}
   function togK(id){var n=Object.assign({},z.besitz);n[id]=!n[id];set({besitz:n,zielId:(!n[id]&&z.zielId===id)?null:z.zielId});}
   function updK(id,neu){setZ(function(prev){var k=Object.assign({},prev.konfigs);k[id]=neu;return Object.assign({},prev,{konfigs:k});});}
-  function doImport(d){set({besitz:d.besitz||{},konfigs:Object.assign({},INIT_KONFIGS,d.konfigs||{}),zielId:d.zielId||null,truppenTyp:d.truppenTyp||null});setGE(d.sterneEinzeln||d.goldSterne||0);setGG(d.sterneGesegnet||0);setGB(d.sterneBuendel||0);if(d.lang)setLang(d.lang);}
+  function doImport(d){set({besitz:d.besitz||{},konfigs:buildKonfigs(d.konfigs),zielId:d.zielId||null,truppenTyp:d.truppenTyp||null});setGE(d.sterneEinzeln||d.goldSterne||0);setGG(d.sterneGesegnet||0);setGB(d.sterneBuendel||0);if(d.lang)setLang(d.lang);}
 
   var besessen=KOM.filter(function(k){return z.besitz[k.id];});
-  var strat=z.zielId?calcStrategie(z.zielId,z.konfigs,z.besitz,gold,lang):null;
+  var strat=z.zielId?calcStrategie(z.zielId,z.konfigs,z.besitz,gold,starExp,lang):null;
   var selTyp=null;if(z.truppenTyp){for(var i=0;i<TRUPPENTYPEN.length;i++)if(TRUPPENTYPEN[i].id===z.truppenTyp){selTyp=TRUPPENTYPEN[i];break;}}
   var tierGruppen=["S","A","B","C"].map(function(tier){return {tier:tier,ks:KOM.filter(function(k){return k.tier===tier;})};});
   var TABS=[{id:"kommandanten"},{id:"strategie"},{id:"truppentypen"},{id:"wochenplan"},{id:"glossar"}];
@@ -429,15 +433,15 @@ function App(){
         var tm=TIER_META[tg.tier],aus=tg.ks.filter(function(k){return z.besitz[k.id];});
         var grid=tg.ks.map(function(k){var sel=!!z.besitz[k.id];return _h("button",{key:k.id,onClick:function(){togK(k.id);},style:{background:sel?k.f+"12":"#fff",border:"2px solid "+(sel?k.f:L.border),borderRadius:10,padding:"8px 6px",textAlign:"center"}},_h("div",{style:{fontSize:18,marginBottom:2}},k.s),_h("div",{style:{fontSize:10,fontWeight:700,color:sel?k.f:L.text,lineHeight:1.2}},k.name),_h("div",{style:{marginTop:3}},_h(TierBadge,{tier:k.tier})),sel&&_h("div",{style:{fontSize:10,color:L.green,fontWeight:700,marginTop:3}},"✓"));});
         var cards=aus.map(function(k){
-          var kC=z.konfigs[k.id]||leerK(),zS=Math.min(kC.stern+1,MAX_STERN),ben=skulpBen(kC.stern,zS),fehl=kC.stern<MAX_STERN?Math.max(0,ben-kC.skulp):0,np=nP(kC.lv),istZiel=z.zielId===k.id;
+          var kC=z.konfigs[k.id]||leerK(),cap=levelCap(kC.stern),istZiel=z.zielId===k.id;
           return _h("div",{key:k.id,style:{background:L.card,border:"2px solid "+(istZiel?k.f:L.border),borderRadius:14,padding:14,boxShadow:istZiel?"0 0 0 3px "+k.f+"18":L.sh}},
             _h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
               _h("div",{style:{display:"flex",alignItems:"center",gap:8}},_h("span",{style:{fontSize:18}},k.s),_h("div",null,_h("div",{style:{fontSize:14,fontWeight:800,color:L.text}},k.name),_h("div",{style:{display:"flex",gap:6,alignItems:"center",marginTop:2}},_h(TierBadge,{tier:k.tier}),_h("span",{style:{fontSize:11,color:L.sub}},L2(k.r))))),
               _h("button",{onClick:function(){set({zielId:istZiel?null:k.id});},style:{padding:"4px 10px",borderRadius:7,border:"1.5px solid "+(istZiel?k.f:L.border),background:istZiel?k.f+"15":"transparent",color:istZiel?k.f:L.mute,fontSize:11,fontWeight:700}},istZiel?T.ziel:T.alsZiel)),
             _h("div",{className:"grid3"},
-              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.level),_h("div",{style:{display:"flex",alignItems:"center",gap:4}},_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.max(1,kC.lv-1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"−"),_h("input",{type:"number",min:1,max:60,value:kC.lv,onChange:function(e){updK(k.id,Object.assign({},kC,{lv:Math.min(60,Math.max(1,parseInt(e.target.value)||1))}));},style:{flex:1,textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"4px 0",background:L.inner}}),_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.min(60,kC.lv+1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"+")),np&&_h("div",{style:{fontSize:10,marginTop:4,color:np.level-kC.lv<=5?L.gold:L.mute,fontWeight:600}},np.level-kC.lv<=5?T.paketBald.replace("{n}",np.level-kC.lv):T.paketBei.replace("{n}",np.level))),
-              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.sternLevel),_h("select",{value:kC.stern,onChange:function(e){updK(k.id,Object.assign({},kC,{stern:parseInt(e.target.value)}));},style:{width:"100%",border:"1.5px solid "+k.f+"66",borderRadius:6,padding:"5px",fontSize:12,fontWeight:700,color:L.text,background:L.inner}},T.sternBez.map(function(b,i){return _h("option",{key:i,value:i},b);})),_h("div",{style:{marginTop:5}},_h(Sterne,{level:kC.stern,farbe:k.f,gr:12}))),
-              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skulpturen),_h("input",{type:"number",min:0,max:999,value:kC.skulp,onChange:function(e){updK(k.id,Object.assign({},kC,{skulp:Math.max(0,parseInt(e.target.value)||0)}));},style:{width:"100%",textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"5px 2px",background:L.inner}}),kC.stern<MAX_STERN&&_h("div",{style:{fontSize:10,color:fehl===0?L.green:L.mute,marginTop:4,fontWeight:600}},fehl===0?T.bereit:fehl>0?T.bis.replace("{n}",fehl).replace("{s}",T.sternBez[zS]):""))),
+              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.level),_h("div",{style:{display:"flex",alignItems:"center",gap:4}},_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.max(1,kC.lv-1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"−"),_h("input",{type:"number",min:1,max:cap,value:kC.lv,onChange:function(e){updK(k.id,Object.assign({},kC,{lv:Math.min(cap,Math.max(1,parseInt(e.target.value)||1))}));},style:{flex:1,textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"4px 0",background:L.inner}}),_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.min(cap,kC.lv+1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"+")),_h("div",{style:{fontSize:10,marginTop:4,color:(kC.lv>=cap&&kC.stern<5)?L.gold:L.mute,fontWeight:600}},(kC.lv>=cap&&kC.stern<5)?T.capReached.replace("{s}",kC.stern+2):T.capInfo.replace("{c}",cap))),
+              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.sternLevel),_h("select",{value:kC.stern,onChange:function(e){var ns=parseInt(e.target.value);updK(k.id,Object.assign({},kC,{stern:ns,lv:Math.min(kC.lv,levelCap(ns))}));},style:{width:"100%",border:"1.5px solid "+k.f+"66",borderRadius:6,padding:"5px",fontSize:12,fontWeight:700,color:L.text,background:L.inner}},T.sternBez.map(function(b,i){return _h("option",{key:i,value:i},b);})),_h("div",{style:{marginTop:5}},_h(Sterne,{level:kC.stern,farbe:k.f,gr:12}))),
+              _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skulpturen),_h("input",{type:"number",min:0,max:999,value:kC.skulp,onChange:function(e){updK(k.id,Object.assign({},kC,{skulp:Math.max(0,parseInt(e.target.value)||0)}));},style:{width:"100%",textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"5px 2px",background:L.inner}}),_h("div",{style:{fontSize:10,color:L.mute,marginTop:4,fontWeight:600}},T.skulpSkills))),
             kC.stern<MAX_STERN&&_h("div",{style:{marginTop:10}},_h(Bar,{wert:Math.min(kC.skulp,ben),max:ben,farbe:k.f,h:6})));
         });
         rows.push(_h("div",{key:tg.tier,style:{marginBottom:20}},_h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},_h("div",{style:{background:tm.bg,color:tm.farbe,fontSize:13,fontWeight:900,padding:"2px 12px",borderRadius:99,border:"1.5px solid "+tm.farbe+"55"}},tg.tier+"-"+T.tier),_h("div",{style:{flex:1,height:1,background:L.border}}),_h("div",{style:{fontSize:11,color:L.mute}},aus.length+"/"+tg.ks.length+" "+T.ausgew)),_h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:7,marginBottom:aus.length?12:0}},grid),aus.length>0&&_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},cards)));
@@ -454,8 +458,8 @@ function App(){
         rows.push(_h("div",{key:"g",style:{background:"#fff",border:"2px solid "+zK.f,borderRadius:16,padding:16,boxShadow:"0 0 0 3px "+zK.f+"18"}},
           _h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:12}},_h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:2,textTransform:"uppercase",marginBottom:3}},T.zielkomm),_h("div",{style:{fontSize:20,fontWeight:900,color:L.text,display:"flex",alignItems:"center",gap:8}},_h("span",null,zK.s),zK.name,_h(TierBadge,{tier:zK.tier})),_h("div",{style:{fontSize:11,color:L.sub,marginTop:2}},L2(zK.r))),_h("div",{style:{textAlign:"right"}},_h("div",{style:{fontSize:30,fontWeight:900,color:strat.fort>=80?L.green:L.gold}},strat.fort+"%"),_h("div",{style:{fontSize:11,color:L.mute}},T.gesamtfort))),
           _h(Bar,{wert:strat.fort,max:100,farbe:zK.f,h:12}),
-          _h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,marginTop:12}},[{l:T.level.split(" ")[0],v:zC.lv+"/60",ok:strat.lv60},{l:T.expBaende,v:strat.lv60?"✓":"~"+strat.expBis60,ok:strat.lv60},{l:T.sterne,v:T.sternBez[zC.stern],ok:strat.maxStern},{l:T.skulpturen,v:strat.gesamt+"/"+strat.skulpMax,ok:strat.maxStern||strat.gesamt>=strat.skulpMax}].map(function(f,i){return _h("div",{key:i,style:{background:L.inner,borderRadius:9,padding:"9px 8px",textAlign:"center",border:"1px solid "+L.border}},_h("div",{style:{fontSize:15,fontWeight:900,color:f.ok?L.green:L.text}},f.v),_h("div",{style:{fontSize:10,color:L.mute,marginTop:2}},f.l));})),
-          gold>0&&!strat.maxStern&&_h("div",{style:{marginTop:10,padding:"9px 12px",background:L.goldBg,borderRadius:10,border:"1px solid "+L.gold+"44",fontSize:12,color:"#92400e"}},"✨ "+gold+" · "+(lang==="de"?"Eigene":"Own")+": "+strat.eigene+" · "+(lang==="de"?"Gesamt":"Total")+": "+strat.gesamt+" · "+(strat.fehlt>0?(lang==="de"?"Fehlen: "+strat.fehlt:"Missing: "+strat.fehlt):"✓")),
+          _h("div",{style:{display:"grid",gridTemplateColumns:"1fr 1fr 1fr 1fr",gap:8,marginTop:12}},[{l:T.level.split(" ")[0],v:zC.lv+"/60",ok:strat.lv60},{l:T.expBaende,v:strat.lv60?"✓":"~"+strat.expBis60,ok:strat.lv60},{l:T.sterne,v:T.sternBez[zC.stern],ok:strat.maxStern},{l:(T.univExp||"Star-EXP"),v:strat.maxStern?"✓":strat.starExpHabe.toLocaleString(lang)+"/"+strat.starExpNoetig.toLocaleString(lang),ok:strat.maxStern||strat.deckt}].map(function(f,i){return _h("div",{key:i,style:{background:L.inner,borderRadius:9,padding:"9px 8px",textAlign:"center",border:"1px solid "+L.border}},_h("div",{style:{fontSize:15,fontWeight:900,color:f.ok?L.green:L.text}},f.v),_h("div",{style:{fontSize:10,color:L.mute,marginTop:2}},f.l));})),
+          !strat.maxStern&&_h("div",{style:{marginTop:10,padding:"9px 12px",background:L.goldBg,borderRadius:10,border:"1px solid "+L.gold+"44",fontSize:12,color:"#92400e"}},"✨ "+(lang==="de"?"Universelle Star-EXP":"Universal star EXP")+": "+strat.starExpHabe.toLocaleString(lang)+" / "+strat.starExpNoetig.toLocaleString(lang)+" "+(lang==="de"?"bis 6★":"to 6★")+" · "+(strat.deckt?"✓":(lang==="de"?"fehlen ":"missing ")+(strat.starExpNoetig-strat.starExpHabe).toLocaleString(lang))),
           (gE+gG+gB)>0&&_h("div",{style:{marginTop:8,padding:"9px 12px",background:"#fffbeb",borderRadius:10,borderLeft:"3px solid "+L.gold,fontSize:11.5,color:L.sub,lineHeight:1.55}},_h("div",{style:{fontWeight:800,color:"#92400e",marginBottom:3}},T.univEmpfTitel),T.univEmpf),
           _h("div",{style:{marginTop:10,padding:"9px 12px",background:zK.f+"0a",borderRadius:10,borderLeft:"3px solid "+zK.f,fontSize:12,color:L.sub,lineHeight:1.55}},_h("strong",{style:{color:L.text}},T.metaInfo),L2(zK.h))));
         rows.push(_h(Karte,{key:"a",titel:T.aktionsplan,symbol:"📋",farbe:L.blue},strat.akt.length===0?_h("div",{style:{color:L.green,fontWeight:700,fontSize:14,textAlign:"center",padding:8}},T.vollstaendig):_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},strat.akt.map(function(a,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"11px 12px",background:L.inner,borderRadius:10,border:"1px solid "+a.f+"33",borderLeft:"3px solid "+a.f}},_h("div",{style:{width:22,height:22,borderRadius:"50%",background:a.f,color:"#fff",fontSize:11,fontWeight:900,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),_h("div",{style:{flex:1}},_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},a.text),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},a.detail)));}))));
