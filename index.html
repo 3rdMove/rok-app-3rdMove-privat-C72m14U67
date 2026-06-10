@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 3.1",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 3.3",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 3.1",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 3.3",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -157,7 +157,7 @@ var KOM=[
   {id:"el_cid",name:"El Cid",tier:"B",f:"#b45309",s:"🐴",r:{de:"Bogenschützen · Kontrolle",en:"Archers · Control"},h:{de:"Gut als Sekundär.",en:"Good as secondary."},p:["saladin","richard"],rar:"leg"},
   {id:"guan_yu",name:"Guan Yu",tier:"B",f:"#9f1239",s:"🔱",r:{de:"Infanterie · Angriff",en:"Infantry · Attack"},h:{de:"Solider Infanterie-Anführer.",en:"Solid infantry leader."},p:["ragnar_p","bai_qi"],rar:"leg"},
   {id:"mehmed",name:"Mehmed II.",tier:"B",f:"#1e3a5f",s:"🕌",r:{de:"Führung · Rallye",en:"Leadership · Rally"},h:{de:"Durch Arthur überholt.",en:"Surpassed by Arthur."},p:["arthur","caesar"],rar:"leg"},
-  {id:"aethelflaed",name:"Aethelflaed",tier:"B",f:"#6b21a8",s:"👸",r:{de:"Gemischt · Debuff",en:"Mixed · Debuff"},h:{de:"Bester Epic-Debuffer.",en:"Best epic debuffer."},p:["arthur","p_boudica"],rar:"leg"},
+  {id:"aethelflaed",name:"Ethelfleda",tier:"B",f:"#6b21a8",s:"👸",r:{de:"Gemischt · Debuff",en:"Mixed · Debuff"},h:{de:"Bester Epic-Debuffer.",en:"Best epic debuffer."},p:["arthur","p_boudica"],rar:"leg"},
   {id:"joan_p",name:"Johanna von Orléans (Prime)",tier:"C",f:"#ca8a04",s:"⚡",r:{de:"Kavallerie · Support",en:"Cavalry · Support"},h:{de:"Früher Meta, heute ersetzt.",en:"Former meta, now replaced."},p:["hannibal","caesar"],rar:"leg"},
   {id:"charles",name:"Karl Martell",tier:"C",f:"#374151",s:"🛡️",r:{de:"Infanterie · Verteidigung",en:"Infantry · Defense"},h:{de:"Nur für Garnison.",en:"Garrison only."},p:["leonidas","scipio"],rar:"leg"},
   {id:"cao_cao",name:"Cao Cao",tier:"C",f:"#6b7280",s:"⚙️",r:{de:"Kavallerie · Mobilität",en:"Cavalry · Mobility"},h:{de:"Für KvK zu schwach.",en:"Too weak for KvK."},p:["minamoto","el_cid"],rar:"leg"},
@@ -519,7 +519,7 @@ function App(){
 
   function manualSave(){persist();if(cloudCfg)cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang}).catch(function(){});setToast(T.savedToast);setTimeout(function(){setToast("");},1800);}
   function set(p){setZ(function(prev){return Object.assign({},prev,p);});}
-  function togK(id){var n=Object.assign({},z.besitz);n[id]=!n[id];set({besitz:n,zielId:(!n[id]&&z.zielId===id)?null:z.zielId});}
+  function togK(id){var n=Object.assign({},z.besitz);n[id]=!n[id];set({besitz:n,zielId:(!n[id]&&z.zielId===id)?null:z.zielId});if(n[id]){setTimeout(function(){var el=document.getElementById("kard-"+id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},150);}}
   function updK(id,neu){setZ(function(prev){var k=Object.assign({},prev.konfigs);k[id]=neu;return Object.assign({},prev,{konfigs:k});});}
   function doImport(d){set({besitz:d.besitz||{},konfigs:buildKonfigs(d.konfigs),zielId:d.zielId||null,truppenTyp:d.truppenTyp||null});setGE(d.sterneEinzeln||d.goldSterne||0);setGG(d.sterneGesegnet||0);setGB(d.sterneBuendel||0);if(d.lang)setLang(d.lang);}
 
@@ -539,7 +539,7 @@ function App(){
         var grid=tg.ks.map(function(k){var sel=!!z.besitz[k.id];return _h("button",{key:k.id,onClick:function(){togK(k.id);},style:{background:sel?k.f+"12":"#fff",border:"2px solid "+(sel?k.f:L.border),borderRadius:10,padding:"8px 6px",textAlign:"center"}},_h("div",{style:{fontSize:18,marginBottom:2}},k.s),_h("div",{style:{fontSize:10,fontWeight:700,color:sel?k.f:L.text,lineHeight:1.2}},k.name),_h("div",{style:{marginTop:3}},_h(TierBadge,{tier:k.tier})),sel&&_h("div",{style:{fontSize:10,color:L.green,fontWeight:700,marginTop:3}},"✓"));});
         var cards=aus.map(function(k){
           var kC=z.konfigs[k.id]||leerK(),cap=levelCap(kC.stern),istZiel=z.zielId===k.id;
-          return _h("div",{key:k.id,style:{background:L.card,border:"2px solid "+(istZiel?k.f:L.border),borderRadius:16,padding:14,boxShadow:istZiel?"0 0 0 3px "+k.f+"18":L.sh}},
+          return _h("div",{key:k.id,id:"kard-"+k.id,style:{background:L.card,border:"2px solid "+(istZiel?k.f:L.border),borderRadius:16,padding:14,boxShadow:istZiel?"0 0 0 3px "+k.f+"18":L.sh,scrollMarginTop:64}},
             _h("div",{style:{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}},
               _h("div",{style:{display:"flex",alignItems:"center",gap:8}},_h("span",{style:{fontSize:18}},k.s),_h("div",null,_h("div",{style:{fontSize:14,fontWeight:800,color:L.text}},k.name),_h("div",{style:{display:"flex",gap:6,alignItems:"center",marginTop:2}},_h(TierBadge,{tier:k.tier}),_h("span",{style:{fontSize:11,color:L.sub}},L2(k.r))))),
               _h("button",{onClick:function(){set({zielId:istZiel?null:k.id});},style:{padding:"4px 10px",borderRadius:7,border:"1.5px solid "+(istZiel?k.f:L.border),background:istZiel?k.f+"15":"transparent",color:istZiel?k.f:L.mute,fontSize:11,fontWeight:700}},istZiel?T.ziel:T.alsZiel)),
