@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 3.6",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 3.7",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 3.6",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 3.7",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -354,7 +354,7 @@ var CLOUD_KEY="rok-cloud-cfg";
 function ladeCloudCfg(){try{var r=localStorage.getItem(CLOUD_KEY);if(r)return JSON.parse(r);}catch(e){}return null;}
 function speichereCloudCfg(c){try{localStorage.setItem(CLOUD_KEY,JSON.stringify(c));}catch(e){}}
 function loescheCloudCfg(){try{localStorage.removeItem(CLOUD_KEY);}catch(e){}}
-function cloudPayload(d){return {besitz:d.besitz,konfigs:d.konfigs,zielId:d.zielId,truppenTyp:d.truppenTyp,sterneEinzeln:d.sterneEinzeln,sterneGesegnet:d.sterneGesegnet,sterneBuendel:d.sterneBuendel,lang:d.lang};}
+function cloudPayload(d){return {besitz:d.besitz,konfigs:d.konfigs,zielId:d.zielId,truppenTyp:d.truppenTyp,sterneEinzeln:d.sterneEinzeln,sterneGesegnet:d.sterneGesegnet,sterneBuendel:d.sterneBuendel,expBaende:d.expBaende||0,lang:d.lang};}
 function cloudPull(cfg){
   if(cfg.provider==="supabase"){
     var url=cfg.url.replace(/\/+$/,"")+"/rest/v1/rok_sync?id=eq."+encodeURIComponent(cfg.syncId)+"&select=data";
@@ -419,6 +419,101 @@ function calcStrategie(zielId,konfigs,besitz,gold,starExp,lang){
   }catch(e){return null;}
 }
 
+// Roster-Strategie: ressourcenbasierte Reihenfolge ueber den gesamten Bestand
+function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
+  try{
+    var de=lang==="de";
+    var zK=findKom(zielId); if(!zK)return null;
+    var zC=konfigs[zielId]; if(!zC)return null;
+    var steps=[];
+    // Partnerwahl: erster besessener aus der Empfehlungsliste, sonst Freischalt-Empfehlung
+    var pOwn=null,pMiss=null;
+    (zK.p||[]).forEach(function(pid){var pk=findKom(pid);if(!pk)return;if(besitz[pid]&&!pOwn)pOwn={k:pk,c:konfigs[pid]};if(!besitz[pid]&&!pMiss)pMiss=pk;});
+    // 0) Skill-Lock-Warnung fuers Ziel
+    var zsk=zC.sk||[1,0,0,0];
+    if(zC.stern===0&&zsk[0]<5){
+      steps.push({text:de?"Skill-Lock: "+zK.name+" jetzt NICHT sternen":"Skill lock: do NOT star up "+zK.name+" yet",
+        detail:de?"Bei 1\u2605 fließen alle Skulpturen garantiert in Skill 1 (aktuell "+zsk[0]+"/5). Erst Skill 1 auf 5 bringen, dann sternen \u2013 nach dem Sternsprung treffen Upgrades zufällig jeden freigeschalteten Skill.":"At 1\u2605 all sculptures are guaranteed to go into skill 1 (currently "+zsk[0]+"/5). Max skill 1 first, then star up \u2013 afterwards upgrades hit a random unlocked skill.",f:"#b91c1c"});
+    }
+    // 1) Simulation: Vorraete ins Ziel
+    var lv=zC.lv,st=zC.stern,eb=expBaende,se=starExp,guard=0,stop=null,parts=[];
+    while(!(lv>=60&&st>=5)&&guard++<24){
+      var cap=levelCap(st);
+      if(lv<cap||(st>=5&&lv<60)){
+        var zl=(st>=5)?60:cap, need=expB(lv,zl);
+        if(eb>=need){parts.push("Lv "+lv+"\u2192"+zl);eb-=need;lv=zl;}
+        else{var r=lv;while(r<zl&&expB(lv,r+1)<=eb)r++;
+          if(r>lv){parts.push("Lv "+lv+"\u2192"+r);eb-=expB(lv,r);lv=r;}
+          stop={typ:"xp",fehlt:Math.ceil(expB(lv,zl)),bis:zl};break;}
+      } else if(st<5){
+        var ks=STAR_EXP_KOST[st]||0;
+        if(se>=ks){parts.push((st+1)+"\u2605\u2192"+(st+2)+"\u2605");se-=ks;st++;}
+        else{stop={typ:"star",fehlt:ks-se,star:st+2};break;}
+      } else break;
+    }
+    var d1;
+    if(parts.length===0&&expBaende===0&&starExp===0){
+      d1=de?"Trage oben EXP-Bände und Star-EXP-Vorräte ein \u2013 dann rechnet die Engine aus, wie weit du kommst und wo der Engpass liegt.":"Enter XP tomes and star EXP stock above \u2013 the engine then computes how far you get and where the bottleneck is.";
+    }else{
+      d1=(de?"Reichweite deiner Vorräte: ":"Your stock reaches: ")+(parts.length?parts.join(", ")+(de?" \u2192 Endstand Lv ":" \u2192 ends at Lv ")+lv+" / "+(st+1)+"\u2605.":(de?"kein Fortschritt möglich.":"no progress possible."));
+      if(stop)d1+=stop.typ==="xp"?(de?" Engpass: ~"+stop.fehlt+" Bände fehlen bis Lv "+stop.bis+".":" Bottleneck: ~"+stop.fehlt+" tomes missing to Lv "+stop.bis+"."):(de?" Engpass: "+stop.fehlt.toLocaleString("de")+" Star-EXP fehlen für den "+stop.star+"\u2605-Sprung.":" Bottleneck: "+stop.fehlt.toLocaleString("en")+" star EXP missing for the "+stop.star+"\u2605 jump.");
+    }
+    d1+=de?" Grundregel: Star-EXP ausschließlich für die Pflicht-Gates des Ziels reservieren.":" Ground rule: reserve star EXP exclusively for the target's mandatory gates.";
+    steps.push({text:de?"Vorräte zuerst komplett in "+zK.name:"All stock into "+zK.name+" first",detail:d1,f:"#1d4ed8"});
+    // 2) Partner
+    if(pOwn){
+      var pc=pOwn.c,pn=pOwn.k.name,psk=pc.sk||[1,0,0,0],pt,pd;
+      if(pc.stern>=2){pt=de?"Partner "+pn+" ist einsatzbereit":"Partner "+pn+" is ready";pd=de?"Mit "+(pc.stern+1)+"\u2605 mitführbar. Weitere Investitionen erst, wenn "+zK.name+" durch ist.":"At "+(pc.stern+1)+"\u2605 he can join. Invest further only once "+zK.name+" is done.";}
+      else{var pk2=starExpBen(pc.stern,2);pt=de?"Danach: Partner "+pn+" auf 3\u2605":"Then: partner "+pn+" to 3\u2605";
+        pd=(de?"Ab 3\u2605 als Sekundär mitführbar (~"+pk2.toLocaleString("de")+" Star-EXP).":"From 3\u2605 he can join as secondary (~"+pk2.toLocaleString("en")+" star EXP).");
+        if(pc.stern===0&&psk[0]<5)pd+=de?" Aber: erst Skill 1 auf 5 (aktuell "+psk[0]+"/5), Skill-Lock gilt auch hier.":" But: max skill 1 first (currently "+psk[0]+"/5), the skill lock applies here too.";
+        pd+=de?" Priorität 2 \u2013 erst bedienen, wenn die Gates von "+zK.name+" gedeckt sind.":" Priority 2 \u2013 serve only after "+zK.name+"'s gates are covered.";}
+      steps.push({text:pt,detail:pd,f:"#6d28d9"});
+    } else if(pMiss){
+      steps.push({text:de?"Partner freischalten: "+pMiss.name:"Unlock partner: "+pMiss.name,detail:de?"Bestes Paar mit "+zK.name+". Quellen: Events, Taverne, KvK-Shop. Bis dahin den besten vorhandenen Sekundär nutzen.":"Best pair with "+zK.name+". Sources: events, tavern, KvK shop. Until then use your best available secondary.",f:"#b91c1c"});
+    }
+    // 3) Trigger-Fishing: billigste 10er-Schwellen im Roster
+    var fische=[];
+    KOM.forEach(function(k){
+      if(!besitz[k.id]||k.id===zielId||(pOwn&&k.id===pOwn.k.id))return;
+      var c=konfigs[k.id];if(!c)return;
+      var nxt=(Math.floor(c.lv/10)+1)*10;
+      if(nxt<=levelCap(c.stern)&&nxt<=60)fische.push({n:k.name,von:c.lv,bis:nxt,bd:Math.round(expB(c.lv,nxt)*10)/10});
+    });
+    fische.sort(function(a,b){return a.bd-b.bd;});
+    var top=fische.slice(0,8);
+    if(top.length){
+      var kum=0;top.forEach(function(f){kum+=f.bd;});kum=Math.round(kum*10)/10;
+      var lst=top.map(function(f){return f.n+" Lv "+f.von+"\u2192"+f.bis+" (~"+f.bd+" Bd.)";}).join(" \u00b7 ");
+      steps.push({text:de?"Trigger-Fishing: billigste Paket-Schwellen":"Trigger fishing: cheapest bundle thresholds",
+        detail:(de?"Jede erreichte 10er-Stufe löst Kaufangebote mit universellen Ressourcen aus. Günstigste Kandidaten (XP-Bedarf aufsteigend): ":"Each 10-level threshold reached triggers purchase offers with universal resources. Cheapest candidates (ascending XP cost): ")+lst+(de?" \u2013 alle "+top.length+" zusammen ~"+kum+" Bände. Nur Überschuss-XP einsetzen, das Ziel hat Vorrang. Sternsprünge triggern ebenfalls, kosten aber Star-EXP \u2013 die bleibt beim Ziel.":" \u2013 all "+top.length+" together ~"+kum+" tomes. Use surplus XP only; the target comes first. Star jumps also trigger offers but cost star EXP \u2013 keep that for the target."),f:"#b45309"});
+    }
+    // 4) Stopp-Liste
+    var stoppN=[];KOM.forEach(function(k){if(besitz[k.id]&&(k.rar==="adv"||k.rar==="eli")&&k.id!==zielId)stoppN.push(k.name);});
+    if(stoppN.length){
+      steps.push({text:de?"Stopp-Liste: hier nichts mehr investieren":"Stop list: invest nothing further here",
+        detail:(de?"Keine Skulpturen oder Star-EXP in: ":"No sculptures or star EXP into: ")+stoppN.join(", ")+(de?". Sammlerinnen (Constance, Mathilde, \u0160\u00e1rka) nur bis Lv 30 leveln \u2013 mehr Talentpunkte bringen kaum Ertrag. Diese Gruppe dient nur noch als Trigger-Vehikel und Füllmarsch.":". Level gatherers (Constance, Mathilde, \u0160\u00e1rka) only to Lv 30 \u2013 extra talent points barely pay off. This group only serves as trigger vehicle and filler march."),f:"#6b7280"});
+    }
+    // 5) Naechstes Ziel nach Abschluss
+    var kand=[];
+    KOM.forEach(function(k){
+      if(!besitz[k.id]||k.id===zielId||k.tier!=="S")return;
+      var c=konfigs[k.id];if(!c)return;
+      var skN=skulpNoetig(c.sk||[1,0,0,0],k.rar||"leg");
+      if(c.lv>=60&&c.stern>=5&&skN===0)return;
+      var fo=(c.lv/60)*40+(c.stern/5)*40+((680-Math.min(680,skN))/680)*20;
+      kand.push({k:k,c:c,fo:fo});
+    });
+    kand.sort(function(a,b){return b.fo-a.fo;});
+    if(kand.length){
+      var nx=kand[0];
+      steps.push({text:de?"Nächstes Ziel danach: "+nx.k.name:"Next target afterwards: "+nx.k.name,
+        detail:(de?"Höchster Fertigstellungsgrad im S-Tier (Lv "+nx.c.lv+", "+(nx.c.stern+1)+"\u2605) \u2013 geringster Restaufwand bis zum nächsten fertigen Paar.":"Highest completion in S tier (Lv "+nx.c.lv+", "+(nx.c.stern+1)+"\u2605) \u2013 lowest remaining effort to the next finished pair.")+(kand.length>1?(de?" Alternative: "+kand[1].k.name+".":" Alternative: "+kand[1].k.name+"."):""),f:"#15803d"});
+    }
+    return {steps:steps};
+  }catch(e){return null;}
+}
+
 // Export/Import Modal
 // ☁️ Cloud-Konfig-Modal
 function CloudModal(p){
@@ -465,7 +560,7 @@ function CloudModal(p){
 
 function EIModal(p){
   var T=TXT[p.lang];var txtArr=useState("");var txt=txtArr[0],setTxt=txtArr[1];
-  var exp=JSON.stringify({besitz:p.z.besitz,konfigs:p.z.konfigs,zielId:p.z.zielId,truppenTyp:p.z.truppenTyp,sterneEinzeln:p.gE,sterneGesegnet:p.gG,sterneBuendel:p.gB,lang:p.lang});
+  var exp=JSON.stringify({besitz:p.z.besitz,konfigs:p.z.konfigs,zielId:p.z.zielId,truppenTyp:p.z.truppenTyp,sterneEinzeln:p.gE,sterneGesegnet:p.gG,sterneBuendel:p.gB,expBaende:p.eb||0,lang:p.lang});
   function kopiere(){try{navigator.clipboard.writeText(exp);}catch(_){var ta=document.createElement("textarea");ta.value=exp;document.body.appendChild(ta);ta.select();document.execCommand("copy");document.body.removeChild(ta);}alert(T.eiCopied);}
   function imp(){try{var d=JSON.parse(txt);p.onImport(d);p.onClose();}catch(_){alert(T.eiInvalid);}}
   return _h("div",{className:"modal-bg",onClick:p.onClose},_h("div",{className:"modal",onClick:function(e){e.stopPropagation();}},
@@ -490,7 +585,7 @@ function App(){
   var geArr=useState(saved.sterneEinzeln||saved.goldSterne||0);var gE=geArr[0],setGE=geArr[1];
   var ggArr=useState(saved.sterneGesegnet||0);var gG=ggArr[0],setGG=ggArr[1];
   var gbArr=useState(saved.sterneBuendel||0);var gB=gbArr[0],setGB=gbArr[1];
-  var gold=gE+gG*4+gB*8;
+  var ebArr=useState(saved.expBaende||0);var eB=ebArr[0],setEB=ebArr[1];   var gold=gE+gG*4+gB*8;
   var starExp=gE*100+gG*400+gB*800;
   var lArr=useState(saved.lang||"de");var lang=lArr[0],setLang=lArr[1];
   var sArr=useState("");var status=sArr[0],setStatus=sArr[1];
@@ -501,7 +596,7 @@ function App(){
   var cgArr=useState(false);var cloudGeladen=cgArr[0],setCloudGeladen=cgArr[1];
   var T=TXT[lang];
 
-  function persist(extra){var data={besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang};Object.assign(data,extra||{});return speichereDaten(data);}
+  function persist(extra){var data={besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,expBaende:eB,lang:lang};Object.assign(data,extra||{});return speichereDaten(data);}
 
   // Cloud: einmaliger Auto-Pull beim Start (falls verbunden)
   useEffect(function(){
@@ -513,17 +608,17 @@ function App(){
     setStatus(T.saving);
     var t=setTimeout(function(){
       persist()?setStatus(T.saved):setStatus(T.saveErr);
-      if(cloudCfg&&cloudGeladen){cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang}).then(function(){setStatus("☁ "+T.saved);}).catch(function(){});}
+      if(cloudCfg&&cloudGeladen){cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,expBaende:eB,lang:lang}).then(function(){setStatus("☁ "+T.saved);}).catch(function(){});}
       setTimeout(function(){setStatus("");},2000);
     },700);
     return function(){clearTimeout(t);};
-  },[z.besitz,z.konfigs,z.zielId,z.truppenTyp,gold,lang]);
+  },[z.besitz,z.konfigs,z.zielId,z.truppenTyp,gold,eB,lang]);
 
-  function manualSave(){persist();if(cloudCfg)cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang}).catch(function(){});setToast(T.savedToast);setTimeout(function(){setToast("");},1800);}
+  function manualSave(){persist();if(cloudCfg)cloudPush(cloudCfg,{besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,expBaende:eB,lang:lang}).catch(function(){});setToast(T.savedToast);setTimeout(function(){setToast("");},1800);}
   function set(p){setZ(function(prev){return Object.assign({},prev,p);});}
   function togK(id){var n=Object.assign({},z.besitz);n[id]=!n[id];set({besitz:n,zielId:(!n[id]&&z.zielId===id)?null:z.zielId});if(n[id]){setTimeout(function(){var el=document.getElementById("kard-"+id);if(el)el.scrollIntoView({behavior:"smooth",block:"start"});},150);}}
   function updK(id,neu){setZ(function(prev){var k=Object.assign({},prev.konfigs);k[id]=neu;return Object.assign({},prev,{konfigs:k});});}
-  function doImport(d){set({besitz:d.besitz||{},konfigs:buildKonfigs(d.konfigs),zielId:d.zielId||null,truppenTyp:d.truppenTyp||null});setGE(d.sterneEinzeln||d.goldSterne||0);setGG(d.sterneGesegnet||0);setGB(d.sterneBuendel||0);if(d.lang)setLang(d.lang);}
+  function doImport(d){set({besitz:d.besitz||{},konfigs:buildKonfigs(d.konfigs),zielId:d.zielId||null,truppenTyp:d.truppenTyp||null});setGE(d.sterneEinzeln||d.goldSterne||0);setGG(d.sterneGesegnet||0);setGB(d.sterneBuendel||0);setEB(d.expBaende||0);if(d.lang)setLang(d.lang);}
 
   var besessen=KOM.filter(function(k){return z.besitz[k.id];});
   var strat=z.zielId?calcStrategie(z.zielId,z.konfigs,z.besitz,gold,starExp,lang):null;
@@ -570,6 +665,13 @@ function App(){
           (gE+gG+gB)>0&&_h("div",{style:{marginTop:8,padding:"9px 12px",background:"#fffbeb",borderRadius:10,borderLeft:"3px solid "+L.gold,fontSize:11.5,color:L.sub,lineHeight:1.55}},_h("div",{style:{fontWeight:800,color:"#92400e",marginBottom:3}},T.univEmpfTitel),T.univEmpf),
           _h("div",{style:{marginTop:10,padding:"9px 12px",background:zK.f+"0a",borderRadius:10,borderLeft:"3px solid "+zK.f,fontSize:12,color:L.sub,lineHeight:1.55}},_h("strong",{style:{color:L.text}},T.metaInfo),L2(zK.h))));
         rows.push(_h(Karte,{key:"a",titel:T.aktionsplan,symbol:"📋",farbe:L.blue},strat.akt.length===0?_h("div",{style:{color:L.green,fontWeight:700,fontSize:14,textAlign:"center",padding:8}},T.vollstaendig):_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},strat.akt.map(function(a,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"11px 12px",background:L.inner,borderRadius:10,border:"1px solid "+a.f+"33",borderLeft:"3px solid "+a.f}},_h("div",{style:{width:22,height:22,borderRadius:"50%",background:a.f,color:"#fff",fontSize:11,fontWeight:900,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),_h("div",{style:{flex:1}},_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},a.text),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},a.detail)));}))));
+        var rst=calcRoster(z.zielId,z.konfigs,z.besitz,starExp,eB,lang);
+        if(rst)rows.push(_h(Karte,{key:"r",titel:(lang==="de"?"Roster-Strategie":"Roster strategy"),symbol:"\ud83e\udded",farbe:"#7c3aed"},
+          _h("div",{style:{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",marginBottom:12,padding:"10px 12px",background:L.inner,borderRadius:10,border:"1px solid "+L.border}},
+            _h("label",{style:{fontSize:12,fontWeight:700,color:L.text}},lang==="de"?"EXP-B\u00e4nde im Lager (\u00e0 50.000):":"XP tomes in stock (50,000 each):"),
+            _h("input",{type:"number",min:0,value:eB,onChange:function(e){setEB(Math.max(0,parseInt(e.target.value,10)||0));},style:{width:90,padding:"7px 9px",borderRadius:8,border:"1px solid "+L.border,fontSize:13,fontWeight:700,background:"#fff",color:L.text}}),
+            _h("div",{style:{fontSize:11.5,color:L.sub}},(lang==="de"?"Star-EXP verf\u00fcgbar: ":"Star EXP available: ")+starExp.toLocaleString(lang))),
+          _h("div",{style:{display:"flex",flexDirection:"column",gap:10}},rst.steps.map(function(a,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"11px 12px",background:L.inner,borderRadius:10,border:"1px solid "+a.f+"33",borderLeft:"3px solid "+a.f}},_h("div",{style:{width:22,height:22,borderRadius:"50%",background:a.f,color:"#fff",fontSize:11,fontWeight:900,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),_h("div",{style:{flex:1}},_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},a.text),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},a.detail)));}))));
         if(strat.paare.length>0)rows.push(_h(Karte,{key:"p",titel:T.empfPartner,symbol:"🤝",farbe:L.acc},_h("div",{style:{display:"flex",flexDirection:"column",gap:9}},strat.paare.map(function(it,i){return _h("div",{key:i,style:{display:"flex",gap:12,alignItems:"center",padding:"10px 12px",background:L.inner,borderRadius:10,border:"1px solid "+it.pk.f+"33"}},_h("span",{style:{fontSize:18}},it.pk.s),_h("div",{style:{flex:1}},_h("div",{style:{display:"flex",gap:7,alignItems:"center",marginBottom:2}},_h("span",{style:{fontSize:13,fontWeight:800,color:it.pk.f}},it.pk.name),_h(TierBadge,{tier:it.pk.tier})),it.bes&&it.pkC?_h("div",{style:{fontSize:12,color:L.sub}},"Lv "+it.pkC.lv+" · "+T.sternBez[it.pkC.stern],it.pkC.stern<3?_h("span",{style:{color:L.red,fontWeight:700}}," "+T.mind3):_h("span",{style:{color:L.green,fontWeight:700}}," "+T.einsatzbereit)):_h("div",{style:{fontSize:12,color:L.red,fontWeight:700}},T.nichtSamml)));}))));
       }
       return _h("div",{style:{display:"flex",flexDirection:"column",gap:14}},rows);
@@ -624,7 +726,7 @@ function App(){
   var content=z.tab==="kommandanten"?renderKomm():z.tab==="strategie"?renderStrat():z.tab==="truppentypen"?renderTrup():z.tab==="wochenplan"?renderWoche():z.tab==="glossar"?renderGloss():z.tab==="faehigkeiten"?renderGlosX("sk"):z.tab==="talente"?renderGlosX("ta"):renderGlosX("fo");
 
   return _h("div",{style:{minHeight:"100vh",background:L.bg,color:L.text,paddingBottom:60}},
-    showEI&&_h(EIModal,{z:z,gE:gE,gG:gG,gB:gB,lang:lang,onImport:doImport,onClose:function(){setShowEI(false);}}),
+    showEI&&_h(EIModal,{z:z,gE:gE,gG:gG,gB:gB,eb:eB,lang:lang,onImport:doImport,onClose:function(){setShowEI(false);}}),
     showCloud&&_h(CloudModal,{lang:lang,cfg:cloudCfg,data:function(){return {besitz:z.besitz,konfigs:z.konfigs,zielId:z.zielId,truppenTyp:z.truppenTyp,sterneEinzeln:gE,sterneGesegnet:gG,sterneBuendel:gB,lang:lang};},onImport:doImport,onConnected:function(c){setCloudCfg(c);setCloudGeladen(true);},onDisconnect:function(){setCloudCfg(null);},onClose:function(){setShowCloud(false);}}),
     toast&&_h("div",{className:"toast"},toast),
     // Header
