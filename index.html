@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 4.5",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 4.7",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 4.5",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 4.7",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -473,6 +473,26 @@ function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
     } else if(pMiss){
       steps.push({text:de?"Partner freischalten: "+pMiss.name:"Unlock partner: "+pMiss.name,detail:de?"Bestes Paar mit "+zK.name+". Quellen: Events, Taverne, KvK-Shop. Bis dahin den besten vorhandenen Sekundär nutzen.":"Best pair with "+zK.name+". Sources: events, tavern, KvK shop. Until then use your best available secondary.",f:"#b91c1c"});
     }
+    // 3b) Meilenstein-Pakete (belegt: Trigger an hohen Kommandanten-Meilensteinen)
+    var meilen=[];
+    KOM.forEach(function(k){
+      if(!besitz[k.id]||(k.tier!=="S"&&k.tier!=="A"))return;
+      var c=konfigs[k.id]; if(!c)return;
+      var naheLv=null;
+      if(c.lv>=44&&c.lv<50)naheLv=50;
+      else if(c.lv>=54&&c.lv<60)naheLv=60;
+      var naheStern=(c.stern===4&&c.lv>=50)?6:null;
+      if(naheLv||naheStern)meilen.push({n:k.name,lv:c.lv,zielLv:naheLv,zielStern:naheStern});
+    });
+    if(meilen.length){
+      var mlist=meilen.map(function(m){
+        if(m.zielStern)return m.n+(de?" (vor 6\u2605-Sprung)":" (before 6\u2605 jump)");
+        return m.n+" (Lv "+m.lv+"\u2192"+m.zielLv+")";
+      }).join(", ");
+      steps.push({text:de?"Meilenstein-Pakete: liquide bleiben":"Milestone bundles: stay liquid",
+        detail:(de?"Belegt: Hohe Kommandanten-Meilensteine (Lv 50/60, hohe Sternspr\u00fcnge) sowie das Freischalten neuer Legend\u00e4rer l\u00f6sen wertvolle Kaufpakete mit universellen Skulpturen und Sternen aus (z.B. \u201eKulturfolger\u201c). Kurz davor: "+mlist+". Empfehlung: vor diesen Spr\u00fcngen etwas Budget/Edelsteine bereithalten, um ein erscheinendes Paket sofort mitnehmen und die Ressourcen direkt einsetzen zu k\u00f6nnen. Reines Hochleveln billiger Kommandanten l\u00f6st KEINE Pakete aus (empirisch widerlegt).":"Documented: high commander milestones (Lv 50/60, high star jumps) and unlocking new legendaries trigger valuable purchase bundles with universal sculptures and stars (e.g. \u201cKulturfolger\u201d). Close to one: "+mlist+". Recommendation: keep some budget/gems ready before these jumps to grab an appearing bundle and use its resources right away. Merely leveling cheap commanders triggers NO bundles (empirically falsified).")
+        ,f:"#0e7490"});
+    }
     // 4) Stopp-Liste
     var stoppN=[];KOM.forEach(function(k){if(besitz[k.id]&&(k.rar==="adv"||k.rar==="eli")&&k.id!==zielId)stoppN.push(k.name);});
     if(stoppN.length){
@@ -629,7 +649,7 @@ function App(){
               _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.level),_h("div",{style:{display:"flex",alignItems:"center",gap:4}},_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.max(1,kC.lv-1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"−"),_h("input",{type:"number",min:1,max:cap,value:kC.lv,onChange:function(e){var raw=e.target.value;if(raw==="")return;var v=parseInt(raw);if(isNaN(v))return;updK(k.id,Object.assign({},kC,{lv:Math.min(cap,Math.max(1,v))}));},style:{flex:1,textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"4px 0",background:L.inner}}),_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.min(cap,kC.lv+1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"+")),_h("div",{style:{fontSize:10,marginTop:4,color:(kC.lv>=cap&&kC.stern<5)?L.gold:L.mute,fontWeight:600}},(kC.lv>=cap&&kC.stern<5)?T.capReached.replace("{s}",kC.stern+2):T.capInfo.replace("{c}",cap))),
               _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.sternLevel),_h("select",{value:kC.stern,onChange:function(e){var ns=parseInt(e.target.value);updK(k.id,Object.assign({},kC,{stern:ns,lv:Math.min(kC.lv,levelCap(ns))}));},style:{width:"100%",border:"1.5px solid "+k.f+"66",borderRadius:6,padding:"5px",fontSize:12,fontWeight:700,color:L.text,background:L.inner}},T.sternBez.map(function(b,i){return _h("option",{key:i,value:i},b);})),_h("div",{style:{marginTop:5}},_h(Sterne,{level:kC.stern,farbe:k.f,gr:12}))),
               _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skulpturen),_h("input",{type:"number",min:0,max:999,value:kC.skulp,onChange:function(e){var raw=e.target.value;if(raw==="")return;updK(k.id,Object.assign({},kC,{skulp:Math.max(0,Math.min(999,parseInt(raw)||0))}));},style:{width:"100%",textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"5px 2px",background:L.inner}}),_h("div",{style:{fontSize:10,color:L.mute,marginTop:4,fontWeight:600}},T.skulpSkills))),
-            _h("div",{style:{marginTop:10}},_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skillsLbl),_h("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}},[0,1,2,3].map(function(si){var unl=kC.stern>=si;var sa=kC.sk||[1,0,0,0];var val=sa[si]||0;return _h("div",{key:si,style:{textAlign:"center"}},_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,marginBottom:2}},"S"+(si+1)),unl?_h("select",{value:Math.max(1,val),onChange:function(e){var ns=(kC.sk||[1,0,0,0]).slice();ns[si]=Math.max(1,Math.min(5,parseInt(e.target.value)||1));updK(k.id,Object.assign({},kC,{sk:ns}));},style:{width:"100%",textAlign:"center",textAlignLast:"center",border:"1.5px solid "+k.f+"44",borderRadius:6,fontSize:13,fontWeight:800,color:L.text,padding:"4px 2px",background:L.inner,WebkitAppearance:"none",appearance:"none"}},[1,2,3,4,5].map(function(n){return _h("option",{key:n,value:n},n);})):_h("div",{style:{fontSize:12,color:"#cbd5e1",padding:"6px 0"}},"🔒"));})),((k.rar==="leg"||k.rar==="epi")&&kC.sk&&kC.sk[0]>=5&&kC.sk[1]>=5&&kC.sk[2]>=5&&kC.sk[3]>=5)?_h("div",{style:{fontSize:10,color:L.green,marginTop:5,fontWeight:700}},T.expertiseOn):null),_h("div",{style:{marginTop:8,borderTop:"1px solid "+L.border+"66",paddingTop:7,display:"flex",flexDirection:"column",gap:3}},(function(){var pe=PAAR_KOMB.filter(function(e){return e.id===k.id;})[0];if(!pe)return null;var ld=lang==="de";function mRow(lbl,pp){var s2=_h("span",{style:{fontSize:9,color:L.mute,fontWeight:700,textTransform:"uppercase",minWidth:72,flexShrink:0}},lbl);if(!pp)return _h("div",{style:{display:"flex",gap:5,alignItems:"center"}},s2,_h("span",{style:{fontSize:11,color:L.mute}},"—"));var pk=findKom(pp.id);if(!pk)return null;var own=!!z.besitz[pp.id];var col=own?"#15803d":"#b91c1c";return _h("div",{style:{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}},s2,_h("span",{style:{fontWeight:700,color:col,fontSize:11}},pk.name),_h("span",{style:{fontSize:10,color:"#94a3b8"}},"("+pp.role+")"),!own&&_h("span",{style:{fontSize:9,color:"#b91c1c",background:"#fee2e2",padding:"1px 5px",borderRadius:5,fontWeight:700}},ld?"freischalten":"unlock"));}var ownP=pe.pairs.filter(function(pp){return !!z.besitz[pp.id];})[0];var metaP=pe.pairs[0];return _h("div",null,mRow(ld?"Im Besitz:":"Owned:",ownP),mRow(ld?"Meta-Best:":"Meta best:",metaP));})()));
+            _h("div",{style:{marginTop:10}},_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skillsLbl),_h("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}},[0,1,2,3].map(function(si){var unl=kC.stern>=si;var sa=kC.sk||[1,0,0,0];var val=sa[si]||0;return _h("div",{key:si,style:{textAlign:"center"}},_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,marginBottom:2}},"S"+(si+1)),unl?_h("select",{value:Math.max(1,val),onChange:function(e){var ns=(kC.sk||[1,0,0,0]).slice();ns[si]=Math.max(1,Math.min(5,parseInt(e.target.value)||1));updK(k.id,Object.assign({},kC,{sk:ns}));},style:{width:"100%",textAlign:"center",textAlignLast:"center",border:"1.5px solid "+k.f+"44",borderRadius:6,fontSize:13,fontWeight:800,color:L.text,padding:"4px 2px",background:L.inner,WebkitAppearance:"none",appearance:"none"}},[1,2,3,4,5].map(function(n){return _h("option",{key:n,value:n},n);})):_h("div",{style:{fontSize:12,color:"#cbd5e1",padding:"6px 0"}},"🔒"));})),((k.rar==="leg"||k.rar==="epi")&&kC.sk&&kC.sk[0]>=5&&kC.sk[1]>=5&&kC.sk[2]>=5&&kC.sk[3]>=5)?_h("div",{style:{fontSize:10,color:L.green,marginTop:5,fontWeight:700}},T.expertiseOn):null),_h("div",{style:{marginTop:8,borderTop:"1px solid "+L.border+"66",paddingTop:7,display:"flex",flexDirection:"column",gap:4}},(function(){var pe=PAAR_KOMB.filter(function(e){return e.id===k.id;})[0];var ld=lang==="de";if(!pe){return _h("div",{style:{fontSize:10,color:L.mute,fontStyle:"italic"}},ld?"Keine belegte Paarungs-Empfehlung.":"No verified pairing recommendation.");}var QCOL={S:"#15803d",A:"#1d4ed8",B:"#b45309"};var QTXT={S:ld?"erstklassig":"top-tier",A:ld?"stark":"strong",B:ld?"solide":"solid"};function pRow(pp){var pk=findKom(pp.id);if(!pk)return null;var own=!!z.besitz[pp.id];var qc=QCOL[pp.q]||"#6b7280";var roleTxt=pp.role===1?(ld?"führt":"leads"):(ld?"Sekundär":"secondary");return _h("div",{style:{display:"flex",gap:6,alignItems:"flex-start",padding:"4px 0"}},_h("span",{style:{fontSize:10,fontWeight:900,color:"#fff",background:qc,minWidth:16,height:16,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}},pp.q),_h("div",{style:{flex:1,minWidth:0}},_h("div",{style:{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}},_h("span",{style:{fontWeight:700,color:own?L.text:"#b91c1c",fontSize:11.5}},pk.name),_h("span",{style:{fontSize:9,color:qc,fontWeight:700}},"· "+QTXT[pp.q]),_h("span",{style:{fontSize:9,color:"#94a3b8"}},"· "+roleTxt),!own&&_h("span",{style:{fontSize:8.5,color:"#b91c1c",background:"#fee2e2",padding:"1px 5px",borderRadius:5,fontWeight:700}},ld?"freischalten":"unlock")),_h("div",{style:{fontSize:10,color:L.sub,lineHeight:1.45,marginTop:1}},ld?pp.de:pp.en)));}var rowsP=pe.pairs.slice(0,3).map(pRow).filter(Boolean);return _h("div",null,_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:2}},ld?"Empfohlene Partner":"Recommended partners"),_h("div",null,rowsP));})()))
         });
         rows.push(_h("div",{key:tg.tier,style:{marginBottom:20}},_h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},_h("div",{style:{background:tm.bg,color:tm.farbe,fontSize:13,fontWeight:900,padding:"2px 12px",borderRadius:99,border:"1.5px solid "+tm.farbe+"55"}},tg.tier+"-"+T.tier),_h("div",{style:{flex:1,height:1,background:L.border}}),_h("div",{style:{fontSize:11,color:L.mute}},aus.length+"/"+tg.ks.length+" "+T.ausgew)),_h("div",{id:"grid-"+tg.tier,style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:7,marginBottom:aus.length?12:0,scrollMarginTop:64}},grid),aus.length>0&&_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},cards)));
       });
@@ -683,51 +703,127 @@ function App(){
   
 var PAAR_KOMB=[
   {id:"arthur",pairs:[
-    {id:"achilleus",prio:"S",role:2,de:"Prim\u00e4r-Meta 2025/26: gleicher Combo-Talentbaum \u2013 h\u00f6chster Kavallerie-Combo-Schaden.",en:"Primary meta 2025/26: same Combo talent tree \u2013 highest cavalry combo damage."},
-    {id:"huo_qubing",prio:"A",role:2,de:"Starke Alternative: Skill-Schaden multipliziert Artus\u2019 AOE.",en:"Strong alternative: skill damage multiplies Arthur\u2019s AOE."}
+    {id:"achilleus",q:"S",role:2,de:"Gleicher Combo-Talentbaum \u2013 st\u00e4rkste Ein-Kavallerie-Kombi 2025/26, h\u00f6chster Combo-Schaden.",en:"Same Combo tree \u2013 strongest single-cavalry combo 2025/26, highest combo damage."},
+    {id:"gang_gamchan",q:"A",role:2,de:"F\u00fcr Zwei-Kavallerie-Setups: Gang Gamchan + Achilles erg\u00e4nzt Artus stark.",en:"For two-cavalry setups: Gang Gamchan + Achilles complements Arthur well."},
+    {id:"huo_qubing",q:"A",role:2,de:"Solide Alternative: hoher Skill-Burst, verst\u00e4rkt Artus\u2019 AOE.",en:"Solid alternative: high skill burst, amplifies Arthur\u2019s AOE."}
+  ]},
+  {id:"achilleus",pairs:[
+    {id:"arthur",q:"S",role:1,de:"Artus f\u00fchrt, Achilles als Sekund\u00e4r \u2013 die Combo-Baum-Synergie ist die beste Ein-Kavallerie-Kombi.",en:"Arthur leads, Achilles secondary \u2013 the Combo-tree synergy is the best single-cavalry combo."},
+    {id:"gang_gamchan",q:"A",role:1,de:"In Zwei-Kavallerie-Setups starkes Duo neben einem Artus-Marsch.",en:"Strong duo alongside an Arthur march in two-cavalry setups."}
+  ]},
+  {id:"nevsky",pairs:[
+    {id:"joan_p",q:"S",role:2,de:"Top-Kavallerie offenes Feld: Joan Prime liefert Heal-over-Time f\u00fcr lange Rallyes.",en:"Top cavalry open field: Joan Prime provides heal-over-time for long rallies."},
+    {id:"joan",q:"A",role:2,de:"Normale Joan als g\u00fcnstigere Heilungs-Alternative zu Joan Prime.",en:"Regular Joan as cheaper healing alternative to Joan Prime."}
   ]},
   {id:"liu_che",pairs:[
-    {id:"bai_qi",prio:"S",role:2,de:"Weltbestes Infanterie-Paar: Bai Qi Schmettern + Liu Che Rage.",en:"World\u2019s best infantry pair: Bai Qi smite + Liu Che rage."},
-    {id:"gorgo",prio:"A",role:2,de:"Beste Alternative: Gorgo erh\u00f6ht Angriffsschaden f\u00fcr Liu Ches S1.",en:"Best alternative: Gorgo increases attack damage for Liu Che\u2019s S1."}
+    {id:"scipio",q:"S",role:2,de:"Top-Infanterie offenes Feld: Scipio Prime + Liu Che, au\u00dfergew\u00f6hnliche Synergie.",en:"Top infantry open field: Scipio Prime + Liu Che, exceptional synergy."},
+    {id:"bai_qi",q:"S",role:2,de:"Bai Qi definiert mit Liu Che die aggressive, robuste Frontlinie.",en:"Bai Qi with Liu Che defines the aggressive, durable frontline."},
+    {id:"ragnar_p",q:"A",role:2,de:"Ragnar Prime stapelt Debuffs \u2013 starke Alternative, wenn kein Scipio Prime.",en:"Ragnar Prime stacks debuffs \u2013 strong alternative without Scipio Prime."}
+  ]},
+  {id:"scipio",pairs:[
+    {id:"liu_che",q:"S",role:1,de:"Liu Che f\u00fchrt, Scipio Prime sekund\u00e4r \u2013 beste Infanterie-Kombi im offenen Feld.",en:"Liu Che leads, Scipio Prime secondary \u2013 best infantry combo in open field."},
+    {id:"alex_great",q:"A",role:2,de:"Scipio + Alexander der Gro\u00dfe kontrolliert Bogensch\u00fctzen \u00fcber Rage-Skills.",en:"Scipio + Alexander the Great controls archers via rage skills."}
+  ]},
+  {id:"ragnar_p",pairs:[
+    {id:"scipio",q:"S",role:2,de:"Zweiter Infanterie-Marsch: Ragnar Prime + Scipio Prime im offenen Feld.",en:"Second infantry march: Ragnar Prime + Scipio Prime in open field."},
+    {id:"liu_che",q:"A",role:2,de:"Ragnar Prime + Liu Che als alternative Debuff-Front.",en:"Ragnar Prime + Liu Che as alternative debuff frontline."}
+  ]},
+  {id:"wallace",pairs:[
+    {id:"liu_che",q:"A",role:2,de:"William Wallace + Liu Che: bew\u00e4hrter erster Infanterie-Marsch.",en:"William Wallace + Liu Che: proven first infantry march."}
+  ]},
+  {id:"zhuge_liang",pairs:[
+    {id:"p_hermann",q:"S",role:2,de:"Top-Bogen offenes Feld & Rally: Zhuge Liang + Hermann Prime, #1 Bogen-Investition 2025/26.",en:"Top archer open field & rally: Zhuge Liang + Hermann Prime, #1 archer investment 2025/26."},
+    {id:"qin_shi",q:"A",role:2,de:"Qin Shi Huang als starke Bogen-Alternative mit hohem AOE.",en:"Qin Shi Huang as strong archer alternative with high AOE."}
+  ]},
+  {id:"p_hermann",pairs:[
+    {id:"zhuge_liang",q:"S",role:1,de:"Zhuge Liang f\u00fchrt, Hermann Prime sekund\u00e4r \u2013 aktuell st\u00e4rkstes Bogen-Paar.",en:"Zhuge Liang leads, Hermann Prime secondary \u2013 currently strongest archer pair."},
+    {id:"p_boudica",q:"A",role:2,de:"Hermann Prime + Boudica Prime: massive Pfeilsalven und Ketten-Silence (Anti-Kavallerie).",en:"Hermann Prime + Boudica Prime: massive arrow storms and chain silence (anti-cavalry)."}
+  ]},
+  {id:"qin_shi",pairs:[
+    {id:"zhuge_liang",q:"S",role:2,de:"Qin Shi Huang + Zhuge Liang: unerreichter Schaden in Gro\u00dfk\u00e4mpfen.",en:"Qin Shi Huang + Zhuge Liang: unmatched damage in large fights."}
+  ]},
+  {id:"ysg",pairs:[
+    {id:"minamoto",q:"A",role:2,de:"YSG + Minamoto, Fokus Bogen- und Unterst\u00fctzungsbaum.",en:"YSG + Minamoto, focus archer and support tree."},
+    {id:"aethelflaed",q:"A",role:2,de:"YSG sekund\u00e4r zu Aethelflaed prim\u00e4r ergibt eine starke AOE-Kombi (Sunset Canyon).",en:"YSG secondary to Aethelflaed primary forms a strong AOE combo (Sunset Canyon)."}
+  ]},
+  {id:"attila",pairs:[
+    {id:"chandra",q:"S",role:2,de:"Top-Kavallerie-Rally: Chandragupta verst\u00e4rkt Attilas Eroberungs-Output (City-Attack).",en:"Top cavalry rally: Chandragupta amplifies Attila\u2019s conquering output (city attack)."},
+    {id:"gengis",q:"A",role:2,de:"Attila + Dschingis Khan bleibt stark f\u00fcr St\u00e4dteangriff.",en:"Attila + Genghis Khan remains strong for city attack."}
+  ]},
+  {id:"harald",pairs:[
+    {id:"alex_great",q:"S",role:2,de:"Top Anti-Heilung-Rally: Harald Sigurdsson + Alexander der Gro\u00dfe.",en:"Top anti-healing rally: Harald Sigurdsson + Alexander the Great."}
+  ]},
+  {id:"nebu",pairs:[
+    {id:"gilgamesch",q:"S",role:2,de:"Top-City-Rally: Nebukadnezar + Gilgamesch, st\u00e4rkste St\u00e4dteangriff-Konfiguration.",en:"Top city rally: Nebuchadnezzar + Gilgamesh, strongest city-attack configuration."}
+  ]},
+  {id:"gilgamesch",pairs:[
+    {id:"nebu",q:"S",role:1,de:"Nebukadnezar f\u00fchrt, Gilgamesch sekund\u00e4r \u2013 Anti-Heilung + Erobern f\u00fcr City-Attack.",en:"Nebuchadnezzar leads, Gilgamesh secondary \u2013 anti-healing + conquering for city attack."}
+  ]},
+  {id:"yss",pairs:[
+    {id:"theodora",q:"S",role:2,de:"Top-City-Defense: Yi Sun-sin + Theodora (gemischte Truppen).",en:"Top city defense: Yi Sun-sin + Theodora (mixed troops)."}
+  ]},
+  {id:"zenobia",pairs:[
+    {id:"gorgo",q:"S",role:2,de:"Top-City-Defense Infanterie-Garnison: Zenobia + Gorgo.",en:"Top city defense infantry garrison: Zenobia + Gorgo."}
   ]},
   {id:"gorgo",pairs:[
-    {id:"liu_che",prio:"S",role:2,de:"Meta Inf./Garnison: Liu Ches S1 multipliziert Gorgos Angriffsbonus.",en:"Meta inf./garrison: Liu Che\u2019s S1 multiplies Gorgo\u2019s attack bonus."},
-    {id:"leonidas",prio:"B",role:2,de:"Spartanisches Defensiv-Paar mit solider Schadensreduktion.",en:"Spartan defensive pair with solid damage reduction."}
+    {id:"zenobia",q:"S",role:1,de:"Zenobia f\u00fchrt, Gorgo sekund\u00e4r \u2013 Top-Infanterie-Garnison zur Stadtverteidigung.",en:"Zenobia leads, Gorgo secondary \u2013 top infantry garrison for city defense."},
+    {id:"liu_che",q:"A",role:2,de:"Mit Liu Che als Angriffspaar: dessen S1 multipliziert Gorgos Angriffsbonus.",en:"With Liu Che as attack pair: his S1 multiplies Gorgo\u2019s attack bonus."}
+  ]},
+  {id:"charles",pairs:[
+    {id:"richard",q:"A",role:2,de:"Charles Martel + Richard I: solide Allround-Struktur-Verteidigung.",en:"Charles Martel + Richard I: solid all-around structure defense."}
   ]},
   {id:"richard",pairs:[
-    {id:"aethelflaed",prio:"S",role:2,de:"Klassisches F\u00fchrungspaar: Debuff + Heilung in Rallye und offenem Feld.",en:"Classic leadership pair: debuff + healing in rally and open field."},
-    {id:"cao_cao",prio:"A",role:2,de:"Kavallerie-Alternative mit Mobilit\u00e4t und Angriffsbonus.",en:"Cavalry alternative with mobility and attack bonus."}
+    {id:"charles",q:"A",role:2,de:"Richard I + Charles Martel: robuste Struktur-Verteidigung.",en:"Richard I + Charles Martel: robust structure defense."},
+    {id:"aethelflaed",q:"A",role:2,de:"Klassisches F\u00fchrungspaar: Aethelflaed debufft, Richard heilt.",en:"Classic leadership pair: Aethelflaed debuffs, Richard heals."}
   ]},
   {id:"aethelflaed",pairs:[
-    {id:"richard",prio:"S",role:2,de:"Debuff erh\u00f6ht Richards Heilungseffekt drastisch.",en:"Debuff greatly increases Richard\u2019s healing effect."},
-    {id:"boudica",prio:"A",role:2,de:"Doppelter Debuff gegen Barbaren-Forts und Rallyes.",en:"Double debuff vs barbarian forts and rallies."}
-  ]},
-  {id:"cao_cao",pairs:[
-    {id:"richard",prio:"A",role:2,de:"Heilung gleicht Cao Caos Glaskanonen-Schw\u00e4che aus.",en:"Healing compensates Cao Cao\u2019s glass cannon weakness."},
-    {id:"minamoto",prio:"A",role:2,de:"Speed-Kavallerie: sehr mobil im offenen Feld.",en:"Speed cavalry: very mobile in open field."}
-  ]},
-  {id:"el_cid",pairs:[
-    {id:"richard",prio:"A",role:2,de:"Richard heilt, El Cid tankt \u2013 robuste Kavallerie-Kombi.",en:"Richard heals, El Cid tanks \u2013 robust cavalry combo."},
-    {id:"cao_cao",prio:"B",role:2,de:"Offensive Kavallerie mit hoher Mobilit\u00e4t.",en:"Offensive cavalry with high mobility."}
-  ]},
-  {id:"boudica",pairs:[
-    {id:"aethelflaed",prio:"A",role:2,de:"Debuff-Tandem f\u00fcr Rallyes und Barbaren-Forts.",en:"Debuff tandem for rallies and barbarian forts."},
-    {id:"richard",prio:"A",role:2,de:"Heilung + Debuff: stabile Kombi f\u00fcr die mittlere Spielphase.",en:"Healing + debuff: stable mid-game combo."}
+    {id:"ysg",q:"S",role:2,de:"Aethelflaed prim\u00e4r + YSG: exzellente AOE-Kombi mit Rage-Regen (Sunset Canyon).",en:"Aethelflaed primary + YSG: excellent AOE combo with rage regen (Sunset Canyon)."},
+    {id:"sun_tzu",q:"A",role:1,de:"Sun Tzu prim\u00e4r + Aethelflaed sekund\u00e4r maximiert den Infanteriebaum.",en:"Sun Tzu primary + Aethelflaed secondary maximizes the infantry tree."},
+    {id:"richard",q:"A",role:2,de:"Debuff + Heilung: bew\u00e4hrtes F\u00fchrungspaar.",en:"Debuff + healing: proven leadership pair."}
   ]},
   {id:"sun_tzu",pairs:[
-    {id:"aethelflaed",prio:"A",role:2,de:"F\u00fchrungspaar: Rage-Generierung erh\u00f6ht Skill-Frequenz.",en:"Leadership pair: rage generation boosts skill frequency."},
-    {id:"boudica",prio:"B",role:2,de:"Alternatives Debuff-F\u00fchrungspaar.",en:"Alternative debuff leadership pair."}
+    {id:"aethelflaed",q:"A",role:2,de:"Sun Tzu prim\u00e4r + Aethelflaed sekund\u00e4r f\u00fcr maximalen Infanteriebaum.",en:"Sun Tzu primary + Aethelflaed secondary for maximum infantry tree."},
+    {id:"saladin",q:"A",role:2,de:"Sun Tzu liefert AOE, Rage und Skill-Buff zu Saladins Einzelzielschaden.",en:"Sun Tzu provides AOE, rage and skill buff to Saladin\u2019s single-target damage."}
+  ]},
+  {id:"saladin",pairs:[
+    {id:"sun_tzu",q:"A",role:2,de:"Saladin (5-5-1-1) + Sun Tzu: stark in Canyon und offenem Feld.",en:"Saladin (5-5-1-1) + Sun Tzu: strong in canyon and open field."},
+    {id:"baibars",q:"A",role:2,de:"Saladin + Baibars: hoher AOE-Schaden, ideal f\u00fcr Canyon.",en:"Saladin + Baibars: high AOE damage, ideal for canyon."}
+  ]},
+  {id:"baibars",pairs:[
+    {id:"saladin",q:"A",role:2,de:"Baibars + Saladin: AOE-Burst f\u00fcr Sunset Canyon.",en:"Baibars + Saladin: AOE burst for Sunset Canyon."}
+  ]},
+  {id:"huo_qubing",pairs:[
+    {id:"belisar_p",q:"A",role:2,de:"Zweiter Kavallerie-Marsch: Huo Qubing + Belisarius Prime.",en:"Second cavalry march: Huo Qubing + Belisarius Prime."},
+    {id:"william",q:"B",role:2,de:"Huo Qubing + William als g\u00fcnstigere Alternative zu Belisarius Prime.",en:"Huo Qubing + William as cheaper alternative to Belisarius Prime."},
+    {id:"arthur",q:"A",role:1,de:"Als Sekund\u00e4r zu Artus: hoher Skill-Burst verst\u00e4rkt dessen AOE.",en:"As secondary to Arthur: high skill burst amplifies his AOE."}
+  ]},
+  {id:"joan_p",pairs:[
+    {id:"nevsky",q:"S",role:1,de:"Alexander Newski f\u00fchrt, Joan Prime heilt \u2013 Top-Kavallerie offenes Feld.",en:"Alexander Nevsky leads, Joan Prime heals \u2013 top cavalry open field."}
+  ]},
+  {id:"joan",pairs:[
+    {id:"nevsky",q:"A",role:1,de:"Newski prim\u00e4r + normale Joan als Heilungs-Sekund\u00e4r.",en:"Nevsky primary + regular Joan as healing secondary."}
+  ]},
+  {id:"alex_great",pairs:[
+    {id:"scipio",q:"A",role:1,de:"Scipio Prime prim\u00e4r + Alexander zur Bogen-Kontrolle via Rage.",en:"Scipio Prime primary + Alexander for archer control via rage."},
+    {id:"harald",q:"S",role:1,de:"Harald Sigurdsson prim\u00e4r + Alexander \u2013 Top Anti-Heilung-Rally.",en:"Harald Sigurdsson primary + Alexander \u2013 top anti-healing rally."}
+  ]},
+  {id:"cao_cao",pairs:[
+    {id:"richard",q:"B",role:2,de:"Kavallerie-Heilung: Richard gleicht Cao Caos Glaskanonen-Schw\u00e4che aus.",en:"Cavalry healing: Richard compensates Cao Cao\u2019s glass cannon weakness."},
+    {id:"minamoto",q:"B",role:2,de:"Speed-Kavallerie: sehr mobil im offenen Feld.",en:"Speed cavalry: very mobile in open field."}
+  ]},
+  {id:"el_cid",pairs:[
+    {id:"richard",q:"B",role:2,de:"Richard heilt, El Cid tankt \u2013 robuste Kavallerie-Kombi.",en:"Richard heals, El Cid tanks \u2013 robust cavalry combo."}
   ]}
 ];
 
 function renderPaarungen(){
   var de=lang==="de";
-  var prioCols={S:"#15803d",A:"#1d4ed8",B:"#b45309"};
+  var prioCols={S:"#15803d",A:"#1d4ed8",B:"#b45309"};var qTxt={S:de?"erstklassig":"top-tier",A:de?"stark":"strong",B:de?"solide":"solid"};
   var rows=[];
   PAAR_KOMB.forEach(function(entry){
     var k=findKom(entry.id); if(!k||!z.besitz[entry.id])return;
     var kc=z.konfigs[entry.id]||leerK;
-    var cards=entry.pairs.map(function(pp){
+    var cards=entry.pairs.slice(0,3).map(function(pp){
       var pk=findKom(pp.id); if(!pk)return null;
       var pc=z.besitz[pp.id]?z.konfigs[pp.id]:null;
       var owned=!!z.besitz[pp.id];
@@ -743,7 +839,7 @@ function renderPaarungen(){
             padding:"2px 8px",borderRadius:8}},badge+lvInfo)
         ),
         _h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.55}},de?pp.de:pp.en),
-        _h("div",{style:{fontSize:10,color:prioCols[pp.prio]||"#6b7280",marginTop:3,fontWeight:700}},"\u2605 Prio "+pp.prio)
+        _h("div",{style:{fontSize:10,color:prioCols[pp.q]||"#6b7280",marginTop:3,fontWeight:700}},"\u2605 "+(qTxt[pp.q]||pp.q)+(pp.role===1?(de?" \u00b7 f\u00fchrt":" \u00b7 leads"):(de?" \u00b7 Sekund\u00e4r":" \u00b7 secondary")))
       );
     }).filter(Boolean);
     rows.push(_h(Karte,{key:entry.id,titel:k.name,symbol:k.s,farbe:k.f},
