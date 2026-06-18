@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 4.7",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.0",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 4.7",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.0",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -476,13 +476,13 @@ function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
     // 3b) Meilenstein-Pakete (belegt: Trigger an hohen Kommandanten-Meilensteinen)
     var meilen=[];
     KOM.forEach(function(k){
-      if(!besitz[k.id]||(k.tier!=="S"&&k.tier!=="A"))return;
+      if(!besitz[k.id]||(k.tier!=="S"&&k.tier!=="A"&&k.tier!=="B"))return;
       var c=konfigs[k.id]; if(!c)return;
+      var cap=levelCap(c.stern);
       var naheLv=null;
-      if(c.lv>=44&&c.lv<50)naheLv=50;
-      else if(c.lv>=54&&c.lv<60)naheLv=60;
-      var naheStern=(c.stern===4&&c.lv>=50)?6:null;
-      if(naheLv||naheStern)meilen.push({n:k.name,lv:c.lv,zielLv:naheLv,zielStern:naheStern});
+      // Cap-erreichender Levelsprung ab Lv 40 (belegt: Artus Lv50, Gorgo Lv40)
+      if(cap>=40&&c.lv>=cap-6&&c.lv<cap)naheLv=cap;
+      if(naheLv||(naheLv===null&&false))meilen.push({n:k.name,lv:c.lv,zielLv:naheLv,zielStern:null});
     });
     if(meilen.length){
       var mlist=meilen.map(function(m){
@@ -490,7 +490,7 @@ function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
         return m.n+" (Lv "+m.lv+"\u2192"+m.zielLv+")";
       }).join(", ");
       steps.push({text:de?"Meilenstein-Pakete: liquide bleiben":"Milestone bundles: stay liquid",
-        detail:(de?"Belegt: Hohe Kommandanten-Meilensteine (Lv 50/60, hohe Sternspr\u00fcnge) sowie das Freischalten neuer Legend\u00e4rer l\u00f6sen wertvolle Kaufpakete mit universellen Skulpturen und Sternen aus (z.B. \u201eKulturfolger\u201c). Kurz davor: "+mlist+". Empfehlung: vor diesen Spr\u00fcngen etwas Budget/Edelsteine bereithalten, um ein erscheinendes Paket sofort mitnehmen und die Ressourcen direkt einsetzen zu k\u00f6nnen. Reines Hochleveln billiger Kommandanten l\u00f6st KEINE Pakete aus (empirisch widerlegt).":"Documented: high commander milestones (Lv 50/60, high star jumps) and unlocking new legendaries trigger valuable purchase bundles with universal sculptures and stars (e.g. \u201cKulturfolger\u201d). Close to one: "+mlist+". Recommendation: keep some budget/gems ready before these jumps to grab an appearing bundle and use its resources right away. Merely leveling cheap commanders triggers NO bundles (empirically falsified).")
+        detail:(de?"Belegt durch deine Empirie: Cap-erreichende Levelspr\u00fcnge ab Lv 40 (Artus Lv 50 \u2192 \u201eKulturfolger\u201c, Gorgo Lv 40 \u2192 \u201eGlorreicher Anf\u00fchrer\u201c) sowie das Freischalten neuer Legend\u00e4rer l\u00f6sen wertvolle Kaufpakete mit universellen Skulpturen und Sternen aus (z.B. \u201eKulturfolger\u201c). Kurz davor: "+mlist+". Empfehlung: vor diesen Spr\u00fcngen etwas Budget/Edelsteine bereithalten, um ein erscheinendes Paket sofort mitnehmen und die Ressourcen direkt einsetzen zu k\u00f6nnen. Reines Hochleveln billiger Kommandanten l\u00f6st KEINE Pakete aus (empirisch widerlegt).":"Documented by your empirical data: cap-reaching level jumps from Lv 40 (Arthur Lv 50, Gorgo Lv 40) and unlocking new legendaries trigger valuable purchase bundles with universal sculptures and stars (e.g. \u201cKulturfolger\u201d). Close to one: "+mlist+". Recommendation: keep some budget/gems ready before these jumps to grab an appearing bundle and use its resources right away. Merely leveling cheap commanders triggers NO bundles (empirically falsified).")
         ,f:"#0e7490"});
     }
     // 4) Stopp-Liste
@@ -649,7 +649,7 @@ function App(){
               _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.level),_h("div",{style:{display:"flex",alignItems:"center",gap:4}},_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.max(1,kC.lv-1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"−"),_h("input",{type:"number",min:1,max:cap,value:kC.lv,onChange:function(e){var raw=e.target.value;if(raw==="")return;var v=parseInt(raw);if(isNaN(v))return;updK(k.id,Object.assign({},kC,{lv:Math.min(cap,Math.max(1,v))}));},style:{flex:1,textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"4px 0",background:L.inner}}),_h("button",{onClick:function(){updK(k.id,Object.assign({},kC,{lv:Math.min(cap,kC.lv+1)}));},style:{width:24,height:28,borderRadius:5,border:"1px solid "+L.border,background:L.inner,color:L.sub,fontSize:14,fontWeight:700}},"+")),_h("div",{style:{fontSize:10,marginTop:4,color:(kC.lv>=cap&&kC.stern<5)?L.gold:L.mute,fontWeight:600}},(kC.lv>=cap&&kC.stern<5)?T.capReached.replace("{s}",kC.stern+2):T.capInfo.replace("{c}",cap))),
               _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.sternLevel),_h("select",{value:kC.stern,onChange:function(e){var ns=parseInt(e.target.value);updK(k.id,Object.assign({},kC,{stern:ns,lv:Math.min(kC.lv,levelCap(ns))}));},style:{width:"100%",border:"1.5px solid "+k.f+"66",borderRadius:6,padding:"5px",fontSize:12,fontWeight:700,color:L.text,background:L.inner}},T.sternBez.map(function(b,i){return _h("option",{key:i,value:i},b);})),_h("div",{style:{marginTop:5}},_h(Sterne,{level:kC.stern,farbe:k.f,gr:12}))),
               _h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skulpturen),_h("input",{type:"number",min:0,max:999,value:kC.skulp,onChange:function(e){var raw=e.target.value;if(raw==="")return;updK(k.id,Object.assign({},kC,{skulp:Math.max(0,Math.min(999,parseInt(raw)||0))}));},style:{width:"100%",textAlign:"center",border:"1.5px solid "+k.f+"66",borderRadius:6,fontSize:17,fontWeight:800,color:L.text,padding:"5px 2px",background:L.inner}}),_h("div",{style:{fontSize:10,color:L.mute,marginTop:4,fontWeight:600}},T.skulpSkills))),
-            _h("div",{style:{marginTop:10}},_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skillsLbl),_h("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}},[0,1,2,3].map(function(si){var unl=kC.stern>=si;var sa=kC.sk||[1,0,0,0];var val=sa[si]||0;return _h("div",{key:si,style:{textAlign:"center"}},_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,marginBottom:2}},"S"+(si+1)),unl?_h("select",{value:Math.max(1,val),onChange:function(e){var ns=(kC.sk||[1,0,0,0]).slice();ns[si]=Math.max(1,Math.min(5,parseInt(e.target.value)||1));updK(k.id,Object.assign({},kC,{sk:ns}));},style:{width:"100%",textAlign:"center",textAlignLast:"center",border:"1.5px solid "+k.f+"44",borderRadius:6,fontSize:13,fontWeight:800,color:L.text,padding:"4px 2px",background:L.inner,WebkitAppearance:"none",appearance:"none"}},[1,2,3,4,5].map(function(n){return _h("option",{key:n,value:n},n);})):_h("div",{style:{fontSize:12,color:"#cbd5e1",padding:"6px 0"}},"🔒"));})),((k.rar==="leg"||k.rar==="epi")&&kC.sk&&kC.sk[0]>=5&&kC.sk[1]>=5&&kC.sk[2]>=5&&kC.sk[3]>=5)?_h("div",{style:{fontSize:10,color:L.green,marginTop:5,fontWeight:700}},T.expertiseOn):null),_h("div",{style:{marginTop:8,borderTop:"1px solid "+L.border+"66",paddingTop:7,display:"flex",flexDirection:"column",gap:4}},(function(){var pe=PAAR_KOMB.filter(function(e){return e.id===k.id;})[0];var ld=lang==="de";if(!pe){return _h("div",{style:{fontSize:10,color:L.mute,fontStyle:"italic"}},ld?"Keine belegte Paarungs-Empfehlung.":"No verified pairing recommendation.");}var QCOL={S:"#15803d",A:"#1d4ed8",B:"#b45309"};var QTXT={S:ld?"erstklassig":"top-tier",A:ld?"stark":"strong",B:ld?"solide":"solid"};function pRow(pp){var pk=findKom(pp.id);if(!pk)return null;var own=!!z.besitz[pp.id];var qc=QCOL[pp.q]||"#6b7280";var roleTxt=pp.role===1?(ld?"führt":"leads"):(ld?"Sekundär":"secondary");return _h("div",{style:{display:"flex",gap:6,alignItems:"flex-start",padding:"4px 0"}},_h("span",{style:{fontSize:10,fontWeight:900,color:"#fff",background:qc,minWidth:16,height:16,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}},pp.q),_h("div",{style:{flex:1,minWidth:0}},_h("div",{style:{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}},_h("span",{style:{fontWeight:700,color:own?L.text:"#b91c1c",fontSize:11.5}},pk.name),_h("span",{style:{fontSize:9,color:qc,fontWeight:700}},"· "+QTXT[pp.q]),_h("span",{style:{fontSize:9,color:"#94a3b8"}},"· "+roleTxt),!own&&_h("span",{style:{fontSize:8.5,color:"#b91c1c",background:"#fee2e2",padding:"1px 5px",borderRadius:5,fontWeight:700}},ld?"freischalten":"unlock")),_h("div",{style:{fontSize:10,color:L.sub,lineHeight:1.45,marginTop:1}},ld?pp.de:pp.en)));}var rowsP=pe.pairs.slice(0,3).map(pRow).filter(Boolean);return _h("div",null,_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:2}},ld?"Empfohlene Partner":"Recommended partners"),_h("div",null,rowsP));})()))
+            _h("div",{style:{marginTop:10}},_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:1,textTransform:"uppercase",marginBottom:5}},T.skillsLbl),_h("div",{style:{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:6}},[0,1,2,3].map(function(si){var unl=kC.stern>=si;var sa=kC.sk||[1,0,0,0];var val=sa[si]||0;return _h("div",{key:si,style:{textAlign:"center"}},_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,marginBottom:2}},"S"+(si+1)),unl?_h("select",{value:Math.max(1,val),onChange:function(e){var ns=(kC.sk||[1,0,0,0]).slice();ns[si]=Math.max(1,Math.min(5,parseInt(e.target.value)||1));updK(k.id,Object.assign({},kC,{sk:ns}));},style:{width:"100%",textAlign:"center",textAlignLast:"center",border:"1.5px solid "+k.f+"44",borderRadius:6,fontSize:13,fontWeight:800,color:L.text,padding:"4px 2px",background:L.inner,WebkitAppearance:"none",appearance:"none"}},[1,2,3,4,5].map(function(n){return _h("option",{key:n,value:n},n);})):_h("div",{style:{fontSize:12,color:"#cbd5e1",padding:"6px 0"}},"🔒"));})),((k.rar==="leg"||k.rar==="epi")&&kC.sk&&kC.sk[0]>=5&&kC.sk[1]>=5&&kC.sk[2]>=5&&kC.sk[3]>=5)?_h("div",{style:{fontSize:10,color:L.green,marginTop:5,fontWeight:700}},T.expertiseOn):null),_h("div",{style:{marginTop:8,borderTop:"1px solid "+L.border+"66",paddingTop:7,display:"flex",flexDirection:"column",gap:4}},(function(){var pe=PAAR_KOMB.filter(function(e){return e.id===k.id;})[0];var ld=lang==="de";if(!pe){return _h("div",{style:{fontSize:10,color:L.mute,fontStyle:"italic"}},ld?"Keine belegte Paarungs-Empfehlung.":"No verified pairing recommendation.");}var QCOL={S:"#15803d",A:"#1d4ed8",B:"#b45309"};var QTXT={S:ld?"erstklassig":"top-tier",A:ld?"stark":"strong",B:ld?"solide":"solid"};function pRow(pp){var pk=findKom(pp.id);if(!pk)return null;var own=!!z.besitz[pp.id];var qc=QCOL[pp.q]||"#6b7280";var roleTxt=pp.role===1?(ld?"führt":"leads"):(ld?"Sekundär":"secondary");return _h("div",{style:{display:"flex",gap:6,alignItems:"flex-start",padding:"4px 0"}},_h("span",{style:{fontSize:10,fontWeight:900,color:"#fff",background:qc,minWidth:16,height:16,borderRadius:4,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0,marginTop:1}},pp.q),_h("div",{style:{flex:1,minWidth:0}},_h("div",{style:{display:"flex",gap:5,alignItems:"center",flexWrap:"wrap"}},_h("span",{style:{fontWeight:700,color:own?L.text:"#b91c1c",fontSize:11.5}},pk.name),_h("span",{style:{fontSize:9,color:qc,fontWeight:700}},"· "+QTXT[pp.q]),_h("span",{style:{fontSize:9,color:"#94a3b8"}},"· "+roleTxt),!own&&_h("span",{style:{fontSize:8.5,color:"#b91c1c",background:"#fee2e2",padding:"1px 5px",borderRadius:5,fontWeight:700}},ld?"freischalten":"unlock")),_h("div",{style:{fontSize:10,color:L.sub,lineHeight:1.45,marginTop:1}},ld?pp.de:pp.en)));}var rowsP=pe.pairs.slice(0,3).map(pRow).filter(Boolean);return _h("div",null,_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:2}},ld?"Empfohlene Partner":"Recommended partners"),_h("div",null,rowsP));})()),(function(){var g2=GLOS[k.id];var foTxt=g2&&g2.fo?(lang==="de"?g2.fo.de:g2.fo.en):null;var fid=formAusText(g2&&g2.fo?g2.fo.de:"");var fo=fid?findForm(fid):null;var ld=lang==="de";if(!fo)return null;return _h("div",{style:{marginTop:8,borderTop:"1px solid "+L.border+"66",paddingTop:7}},_h("div",{style:{fontSize:9,color:L.mute,fontWeight:700,textTransform:"uppercase",letterSpacing:0.5,marginBottom:3}},ld?"Empfohlene Formation":"Recommended formation"),_h("div",{style:{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap"}},_h("span",{style:{fontSize:11.5,fontWeight:700,color:fo.farbe,background:fo.farbe+"18",padding:"2px 9px",borderRadius:8}},ld?fo.name.de:fo.name.en),_h("span",{style:{fontSize:10.5,color:L.sub}},ld?fo.bonus.de:fo.bonus.en)));})())
         });
         rows.push(_h("div",{key:tg.tier,style:{marginBottom:20}},_h("div",{style:{display:"flex",alignItems:"center",gap:10,marginBottom:10}},_h("div",{style:{background:tm.bg,color:tm.farbe,fontSize:13,fontWeight:900,padding:"2px 12px",borderRadius:99,border:"1.5px solid "+tm.farbe+"55"}},tg.tier+"-"+T.tier),_h("div",{style:{flex:1,height:1,background:L.border}}),_h("div",{style:{fontSize:11,color:L.mute}},aus.length+"/"+tg.ks.length+" "+T.ausgew)),_h("div",{id:"grid-"+tg.tier,style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(110px,1fr))",gap:7,marginBottom:aus.length?12:0,scrollMarginTop:64}},grid),aus.length>0&&_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},cards)));
       });
@@ -701,6 +701,39 @@ function App(){
   }
 
   
+
+var FORMATIONEN=[
+  {id:"keil",name:{de:"Keilformation",en:"Wedge"},bonus:{de:"+5 % Skill-Schaden",en:"+5% skill damage"},farbe:"#dc2626",fuer:{de:"Skill-Schaden-Kommandanten (die meisten Angreifer)",en:"Skill damage commanders (most attackers)"}},
+  {id:"bogen",name:{de:"Bogenformation",en:"Arch"},bonus:{de:"+5 % normaler Angriffsschaden",en:"+5% basic attack damage"},farbe:"#d97706",fuer:{de:"Kommandanten mit hohem Grundangriff",en:"High basic-attack commanders"}},
+  {id:"delta",name:{de:"Delta-Formation",en:"Delta"},bonus:{de:"+10 % Combo-Schaden",en:"+10% combo damage"},farbe:"#7c3aed",fuer:{de:"Combo-Kommandanten (z. B. Artus, Achilles)",en:"Combo commanders (e.g. Arthur, Achilles)"}},
+  {id:"pincer",name:{de:"Pincer-Formation",en:"Pincer"},bonus:{de:"+10 % Schmetter-Schaden",en:"+10% smite damage"},farbe:"#be123c",fuer:{de:"Schmetter-Kommandanten (z. B. Wallace, Bai Qi)",en:"Smite commanders (e.g. Wallace, Bai Qi)"}},
+  {id:"staffel",name:{de:"Staffelformation (Echelon)",en:"Echelon"},bonus:{de:"Prozent-Buffs auf andere Truppen \u00d71,2",en:"Percentage buffs to other troops \u00d71.2"},farbe:"#0891b2",fuer:{de:"Unterst\u00fctzer/Buffer (z. B. Ragnar Prime)",en:"Support/buffers (e.g. Ragnar Prime)"}},
+  {id:"hohlquadrat",name:{de:"Hohlquadrat",en:"Hollow Square"},bonus:{de:"\u22122 % erlittener Schaden (alle Truppen)",en:"-2% damage taken (all troops)"},farbe:"#16a34a",fuer:{de:"Robuste Tanks/Verteidiger",en:"Robust tanks/defenders"}},
+  {id:"testudo",name:{de:"Testudo",en:"Testudo"},bonus:{de:"\u22125 % Schaden mit Schild, +2,5 % Heilung",en:"-5% damage when shielded, +2.5% healing"},farbe:"#15803d",fuer:{de:"Schild-Kommandanten",en:"Shield commanders"}},
+  {id:"kreis",name:{de:"Kreisformation",en:"Circle"},bonus:{de:"+5 % erhaltene Heilung",en:"+5% healing received"},farbe:"#059669",fuer:{de:"Heiler-Setups",en:"Healer setups"}},
+  {id:"linie",name:{de:"Linienformation",en:"Line"},bonus:{de:"+10 % Sammelgeschwindigkeit",en:"+10% gathering speed"},farbe:"#0e7490",fuer:{de:"Sammler (Constance, Mathilde \u2026)",en:"Gatherers (Constance, Matilda \u2026)"}},
+  {id:"dreifachlinie",name:{de:"Dreifachlinie",en:"Triple Line"},bonus:{de:"+5 % Marschgeschwindigkeit",en:"+5% march speed"},farbe:"#2563eb",fuer:{de:"Mobile Sp\u00e4h-/Speed-M\u00e4rsche",en:"Mobile scout/speed marches"}},
+  {id:"staggered",name:{de:"Gestaffelt (Rally)",en:"Staggered"},bonus:{de:"+15 % Marschtempo zu Rally/Garnison",en:"+15% march speed to rally/garrison"},farbe:"#4f46e5",fuer:{de:"Rally-Teilnehmer",en:"Rally participants"}},
+  {id:"tercio",name:{de:"Tercio (Garnison)",en:"Tercio"},bonus:{de:"In Garnison: Aufr\u00fcstungs-Boni gelten f\u00fcr alle Truppentypen",en:"Garrisoned: armament bonuses apply to all troop types"},farbe:"#9333ea",fuer:{de:"Gemischte Garnisonen",en:"Mixed garrisons"}}
+];
+// Leitet die empfohlene Formation aus dem Glossar-fo-Text ab
+function formAusText(txt){
+  if(!txt)return null;
+  var t=txt.toLowerCase();
+  if(t.indexOf("delta")>=0)return "delta";
+  if(t.indexOf("pincer")>=0||t.indexOf("schmetter")>=0)return "pincer";
+  if(t.indexOf("keil")>=0)return "keil";
+  if(t.indexOf("staffel")>=0||t.indexOf("echelon")>=0)return "staggered";
+  if(t.indexOf("hohlquadrat")>=0)return "hohlquadrat";
+  if(t.indexOf("testudo")>=0)return "testudo";
+  if(t.indexOf("kreis")>=0)return "kreis";
+  if(t.indexOf("dreifachlinie")>=0)return "dreifachlinie";
+  if(t.indexOf("linie")>=0||t.indexOf("linien")>=0)return "linie";
+  if(t.indexOf("bogen")>=0)return "bogen";
+  return null;
+}
+function findForm(fid){for(var i=0;i<FORMATIONEN.length;i++)if(FORMATIONEN[i].id===fid)return FORMATIONEN[i];return null;}
+
 var PAAR_KOMB=[
   {id:"arthur",pairs:[
     {id:"achilleus",q:"S",role:2,de:"Gleicher Combo-Talentbaum \u2013 st\u00e4rkste Ein-Kavallerie-Kombi 2025/26, h\u00f6chster Combo-Schaden.",en:"Same Combo tree \u2013 strongest single-cavalry combo 2025/26, highest combo damage."},
@@ -853,6 +886,63 @@ function renderPaarungen(){
   return _h("div",{style:{display:"flex",flexDirection:"column",gap:14}},rows);
 }
 
+
+function renderFormationen(){
+  var de=lang==="de";
+  // Einsteiger-Erklaerblock
+  var intro=_h("div",{style:{background:"#fff",border:"1px solid "+L.border,borderRadius:16,padding:16,marginBottom:16,boxShadow:L.sh}},
+    _h("div",{style:{fontSize:15,fontWeight:800,color:L.text,marginBottom:8}},de?"\ud83d\udee1\ufe0f Aufr\u00fcstung f\u00fcr Einsteiger \u2013 Schritt f\u00fcr Schritt":"\ud83d\udee1\ufe0f Armaments for beginners \u2013 step by step"),
+    _h("div",{style:{fontSize:12.5,color:L.sub,lineHeight:1.65}},
+      de?"Jeder Prim\u00e4r-Kommandant (der vordere im Marsch) kann eine FORMATION tragen. Sie gibt einen festen Kampfbonus. Achtung: Der Bonus gilt NUR f\u00fcr den prim\u00e4ren Kommandanten, nicht den sekund\u00e4ren. So gehst du vor:":"Each primary commander (the front one in a march) can equip a FORMATION granting a fixed combat bonus. Note: the bonus applies ONLY to the primary commander, not the secondary. Here is how:"),
+    _h("ol",{style:{margin:"10px 0 0 0",paddingLeft:18,fontSize:12,color:L.sub,lineHeight:1.7}},
+      _h("li",null,de?"\u00d6ffne den Kommandanten \u2192 Reiter \u201eAufr\u00fcstung\u201c / \u201eFormation\u201c.":"Open the commander \u2192 tab \u201cArmaments\u201d / \u201cFormation\u201d."),
+      _h("li",null,de?"W\u00e4hle die FORMATION, die zu seiner Rolle passt (siehe Liste unten).":"Pick the FORMATION matching its role (see list below)."),
+      _h("li",null,de?"Bestücke die 4 Aufr\u00fcstungs-Slots mit Teilen DEINES Truppentyps (Kavallerie/Infanterie/Bogen). Gleiche Farbe wie dein Marsch = beste Wirkung.":"Fill the 4 armament slots with parts of YOUR troop type (cavalry/infantry/archer). Same type as your march = best effect."),
+      _h("li",null,de?"INSCHRIFTEN priorisieren: Skill-Schaden zuerst, danach Angriff deines Truppentyps, dann Gesundheit/Verteidigung.":"Prioritize INSCRIPTIONS: skill damage first, then attack of your troop type, then health/defense.")));
+  // Formationsliste mit Wofuer
+  var liste=FORMATIONEN.map(function(f){
+    return _h("div",{key:f.id,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"10px 12px",background:L.inner,borderRadius:10,border:"1px solid "+f.farbe+"33",borderLeft:"3px solid "+f.farbe,marginBottom:6}},
+      _h("div",{style:{flex:1}},
+        _h("div",{style:{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:2}},
+          _h("span",{style:{fontWeight:800,fontSize:13,color:f.farbe}},de?f.name.de:f.name.en),
+          _h("span",{style:{fontSize:11,fontWeight:700,color:L.text,background:f.farbe+"15",padding:"1px 7px",borderRadius:6}},de?f.bonus.de:f.bonus.en)),
+        _h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},(de?"Ideal f\u00fcr: ":"Ideal for: ")+(de?f.fuer.de:f.fuer.en))));
+  });
+  var listCard=_h("div",{style:{background:"#fff",border:"1px solid "+L.border,borderRadius:16,padding:16,marginBottom:16,boxShadow:L.sh}},
+    _h("div",{style:{fontSize:14,fontWeight:800,color:L.text,marginBottom:10}},de?"Alle Formationen & wof\u00fcr":"All formations & their use"),
+    _h("div",null,liste));
+  // Inschriften-Erklaerung
+  var inschrift=_h("div",{style:{background:"#fff",border:"1px solid "+L.border,borderRadius:16,padding:16,marginBottom:16,boxShadow:L.sh}},
+    _h("div",{style:{fontSize:14,fontWeight:800,color:L.text,marginBottom:8}},de?"\ud83d\udd16 Inschriften \u2013 welche zuerst?":"\ud83d\udd16 Inscriptions \u2013 which first?"),
+    _h("div",{style:{fontSize:12,color:L.sub,lineHeight:1.65,marginBottom:8}},de?"Inschriften sind Zusatz-Boni auf den Aufr\u00fcstungsteilen. Allgemeine Priorit\u00e4t f\u00fcr Angreifer:":"Inscriptions are extra bonuses on armament parts. General priority for attackers:"),
+    _h("div",{style:{display:"flex",flexDirection:"column",gap:5}},
+      _h("div",{style:{fontSize:12,color:L.text}},de?"1\ufe0f\u20e3 Skill-Schaden \u2013 wirkt auf fast jeden Angreifer am st\u00e4rksten.":"1\ufe0f\u20e3 Skill damage \u2013 strongest on almost every attacker."),
+      _h("div",{style:{fontSize:12,color:L.text}},de?"2\ufe0f\u20e3 Angriff deines Truppentyps (Kavallerie-/Infanterie-/Bogen-Angriff).":"2\ufe0f\u20e3 Attack of your troop type (cavalry/infantry/archer attack)."),
+      _h("div",{style:{fontSize:12,color:L.text}},de?"3\ufe0f\u20e3 Gesundheit & Verteidigung \u2013 f\u00fcr l\u00e4ngeres \u00dcberleben, v. a. bei Tanks/Garnison.":"3\ufe0f\u20e3 Health & defense \u2013 for survivability, esp. tanks/garrison.")));
+  // Pro Kommandant: empfohlene Formation aus Glossar
+  var perK=[];
+  ["S","A","B","C","D"].forEach(function(tier){
+    var ks=KOM.filter(function(k){return k.tier===tier&&z.besitz[k.id];});
+    if(ks.length===0)return;
+    var rowsK=ks.map(function(k){
+      var g=GLOS[k.id]; if(!g||!g.fo)return null;
+      var fid=formAusText(g.fo.de); var fo=fid?findForm(fid):null;
+      return _h("div",{key:k.id,style:{display:"flex",gap:8,alignItems:"center",padding:"7px 0",borderBottom:"1px solid "+L.border+"55"}},
+        _h("span",{style:{fontSize:18}},k.s),
+        _h("span",{style:{fontWeight:700,fontSize:12.5,color:L.text,minWidth:130}},k.name),
+        fo?_h("span",{style:{fontSize:11,fontWeight:700,color:fo.farbe,background:fo.farbe+"15",padding:"1px 8px",borderRadius:6}},de?fo.name.de:fo.name.en):_h("span",{style:{fontSize:11,color:L.mute}},"\u2014"),
+        _h("span",{style:{fontSize:10.5,color:L.sub,flex:1}},de?g.fo.de:g.fo.en));
+    }).filter(Boolean);
+    if(rowsK.length)perK.push(_h("div",{key:tier,style:{marginBottom:14}},
+      _h("div",{style:{fontSize:12,fontWeight:800,color:L.mute,marginBottom:4}},tier+"-"+(de?"Tier":"Tier")),
+      _h("div",null,rowsK)));
+  });
+  var perKCard=perK.length?_h("div",{style:{background:"#fff",border:"1px solid "+L.border,borderRadius:16,padding:16,boxShadow:L.sh}},
+    _h("div",{style:{fontSize:14,fontWeight:800,color:L.text,marginBottom:10}},de?"Deine Kommandanten \u2013 Formation & Detail":"Your commanders \u2013 formation & detail"),
+    _h("div",null,perK)):null;
+  return _h("div",null,intro,listCard,inschrift,perKCard);
+}
+
 function renderWoche(){
     try{
       var cards=T.wochenplan.map(function(w){var tot=w.ev.reduce(function(s,e){return s+e.s;},0);return _h("div",{key:w.w,style:{background:"#fff",border:"1px solid "+L.border,borderRadius:16,overflow:"hidden",boxShadow:L.sh}},_h("div",{style:{background:w.c+"0d",padding:"12px 16px",borderBottom:"1px solid "+L.border,display:"flex",justifyContent:"space-between",alignItems:"center"}},_h("div",null,_h("div",{style:{fontSize:10,color:L.mute,letterSpacing:2,textTransform:"uppercase"}},T.woche+" "+w.w),_h("div",{style:{fontSize:14,fontWeight:800,color:w.c}},w.b)),_h("div",{style:{textAlign:"right"}},_h("div",{style:{fontSize:22,fontWeight:900,color:w.c}},"~"+tot),_h("div",{style:{fontSize:11,color:L.mute}},T.wocheUebersicht))),_h("div",{style:{padding:"12px 16px",display:"flex",flexDirection:"column",gap:10}},w.ev.map(function(ev,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start"}},_h("div",{style:{background:w.c+"15",color:w.c,fontSize:12,fontWeight:900,padding:"3px 8px",borderRadius:7,flexShrink:0,marginTop:1}},"+"+ev.s),_h("div",null,_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},ev.n),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},ev.t)));})));});
@@ -881,7 +971,7 @@ function renderWoche(){
         })));
     }catch(e){return _h("div",null,"Fehler / Error");}
   }
-  var content=z.tab==="kommandanten"?renderKomm():z.tab==="strategie"?renderStrat():z.tab==="truppentypen"?renderTrup():z.tab==="wochenplan"?renderWoche():z.tab==="paarungen"?renderPaarungen():z.tab==="glossar"?renderGloss():z.tab==="faehigkeiten"?renderGlosX("sk"):z.tab==="talente"?renderGlosX("ta"):renderGlosX("fo");
+  var content=z.tab==="kommandanten"?renderKomm():z.tab==="strategie"?renderStrat():z.tab==="truppentypen"?renderTrup():z.tab==="wochenplan"?renderWoche():z.tab==="paarungen"?renderPaarungen():z.tab==="glossar"?renderGloss():z.tab==="faehigkeiten"?renderGlosX("sk"):z.tab==="talente"?renderGlosX("ta"):z.tab==="formationen"?renderFormationen():renderGlosX("fo");
 
   return _h("div",{style:{minHeight:"100vh",background:L.bg,color:L.text,paddingBottom:60}},
     showEI&&_h(EIModal,{z:z,gE:gE,gG:gG,gB:gB,eb:eB,lang:lang,onImport:doImport,onClose:function(){setShowEI(false);}}),
