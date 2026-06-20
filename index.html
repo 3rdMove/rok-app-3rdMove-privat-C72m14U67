@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.0",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.1",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.0",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.1",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -420,6 +420,88 @@ function calcStrategie(zielId,konfigs,besitz,gold,starExp,lang){
   }catch(e){return null;}
 }
 
+
+// Dynamische globale Empfehlungsliste: WEN zuerst, WIE WEIT, WARUM
+function calcEmpfehlung(konfigs,besitz,lang){
+  try{
+    var de=lang==="de";
+    var items=[];
+    // Bewertung jedes besessenen Kommandanten nach Ausbau-Wuerdigkeit
+    KOM.forEach(function(k){
+      if(!besitz[k.id])return;
+      var c=konfigs[k.id]; if(!c)return;
+      var rar=k.rar||"leg";
+      // Nur kampfrelevante Raritaeten priorisieren
+      if(rar==="adv"||rar==="eli")return;
+      var tierScore={S:100,A:75,B:50,C:25,D:10}[k.tier]||10;
+      // Fertigstellungsgrad
+      var lv=c.lv,st=c.stern,sk=c.sk||[1,0,0,0];
+      var skSum=sk[0]+sk[1]+sk[2]+sk[3];
+      var fertig=(lv>=60&&st>=5&&skSum>=20);
+      if(fertig)return; // fertige nicht mehr listen
+      // Naehe zu einem Trigger-Meilenstein (Cap mit Sterngate) = Bonus
+      var cap=levelCap(st);
+      var meilenstein=(cap>=40&&cap<60&&st<5&&lv>=cap-6&&lv<cap);
+      // Prioritaets-Score: hoeheres Tier + schon investiert (naeher an fertig) zuerst
+      var invest=(lv/60)*30+(st/5)*30+(skSum/20)*20;
+      var score=tierScore+invest*0.5+(meilenstein?15:0);
+      // Empfohlenes naechstes Zwischenziel bestimmen
+      var nextAction;
+      if(st===0&&sk[0]<5){
+        nextAction=de?"Skill 1 auf 5/5 bringen (Skulpturen), NICHT sternen":"Max skill 1 to 5/5 (sculptures), do NOT star up";
+      } else if(meilenstein){
+        nextAction=de?("Auf Lv "+cap+" leveln \u2013 Cap-Sprung mit Sterngate, Paket m\u00f6glich (vorher liquide bleiben)"):("Level to Lv "+cap+" \u2013 cap jump with star gate, bundle possible (stay liquid)");
+      } else if(lv<cap){
+        nextAction=de?("Auf Lv "+cap+" leveln (aktuelles Cap)"):("Level to Lv "+cap+" (current cap)");
+      } else if(st<5){
+        nextAction=de?((st+1)+"\u2605 \u2192 "+(st+2)+"\u2605 sternen (Star-EXP), hebt das Level-Cap"):("Star up "+(st+1)+"\u2605 \u2192 "+(st+2)+"\u2605 (star EXP), raises level cap");
+      } else {
+        nextAction=de?"Auf Lv 60 leveln, dann Skills auf 5/5/5/5":"Level to 60, then skills to 5/5/5/5";
+      }
+      items.push({k:k,c:c,score:score,action:nextAction,meilenstein:meilenstein,
+        statusTxt:"Lv "+lv+" \u00b7 "+(st+1)+"\u2605 \u00b7 Skills "+sk[0]+"/"+sk[1]+"/"+sk[2]+"/"+sk[3]});
+    });
+    items.sort(function(a,b){return b.score-a.score;});
+    return items.slice(0,8);
+  }catch(e){return [];}
+}
+
+
+// Dynamische Empfehlungsliste: was als Naechstes entwickeln?
+function calcEmpfehlung(konfigs,besitz,zielId,lang){
+  var de=lang==="de";
+  var TIERW={S:100,A:70,B:45,C:20,D:5};
+  var liste=[];
+  KOM.forEach(function(k){
+    if(!besitz[k.id])return;
+    var c=konfigs[k.id]; if(!c)return;
+    var rar=k.rar||"leg";
+    // nur leg/epi sind sinnvolle Entwicklungsziele
+    if(rar!=="leg"&&rar!=="epi")return;
+    var fertig=(c.lv>=60&&c.stern>=5);
+    var skN=skulpNoetig(c.sk||[1,0,0,0],rar);
+    // Score: Tier-Wert + Fortschritts-Naehe (fast fertige zuerst) + Zielbonus
+    var fortschritt=(c.lv/60)*0.5+(c.stern/5)*0.4+((rar==="leg"?680:440)-skN)/(rar==="leg"?680:440)*0.1;
+    var score=(TIERW[k.tier]||10)*(0.5+0.5*fortschritt);
+    if(k.id===zielId)score+=1000; // aktuelles Ziel immer oben
+    // naechster sinnvoller Schritt
+    var schritt,warum;
+    var cap=levelCap(c.stern);
+    if(fertig){schritt=de?"Fertig \u2013 Skills feilen":"Done \u2013 polish skills";warum=de?"Max-Level erreicht.":"Max level reached.";}
+    else if(c.stern===0&&(c.sk&&c.sk[0]<5)){schritt=de?"Skill 1 auf 5 (vor dem Sternen!)":"Skill 1 to 5 (before starring!)";warum=de?"Skill-Lock nutzen: bei 1\u2605 fliesst alles in Skill 1.":"Use skill lock: at 1\u2605 everything goes into skill 1.";}
+    else if(c.lv>=cap-6&&c.lv<cap&&cap>=40&&cap<60){schritt=de?"Auf Lv "+cap+" bringen":"Level to "+cap;warum=de?"Cap-Sprung mit Sterngate \u2013 l\u00f6st Meilenstein-Paket aus.":"Cap jump with star gate \u2013 triggers milestone bundle.";}
+    else if(c.lv<cap){schritt=de?"Leveln bis Lv "+cap:"Level up to "+cap;warum=de?"Bis zum aktuellen Level-Cap auff\u00fcllen.":"Fill up to current level cap.";}
+    else if(c.stern<5){schritt=de?(c.stern+1)+"\u2605 \u2192 "+(c.stern+2)+"\u2605":(c.stern+1)+"\u2605 \u2192 "+(c.stern+2)+"\u2605";warum=de?"Sterngate \u00f6ffnet n\u00e4chsten Level-Cap.":"Star gate opens next level cap.";}
+    else {schritt=de?"Leveln bis Lv 60":"Level to 60";warum=de?"Endausbau.":"Final build.";}
+    liste.push({k:k,c:c,score:score,fertig:fertig,schritt:schritt,warum:warum,skN:skN});
+  });
+  liste.sort(function(a,b){
+    if(a.fertig!==b.fertig)return a.fertig?1:-1; // fertige nach unten
+    return b.score-a.score;
+  });
+  return liste;
+}
+
 // Roster-Strategie: ressourcenbasierte Reihenfolge ueber den gesamten Bestand
 function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
   try{
@@ -670,6 +752,35 @@ function App(){
           (gE+gG+gB)>0&&_h("div",{style:{marginTop:8,padding:"9px 12px",background:"#fffbeb",borderRadius:10,borderLeft:"3px solid "+L.gold,fontSize:11.5,color:L.sub,lineHeight:1.55}},_h("div",{style:{fontWeight:800,color:"#92400e",marginBottom:3}},T.univEmpfTitel),T.univEmpf),
           _h("div",{style:{marginTop:10,padding:"9px 12px",background:zK.f+"0a",borderRadius:10,borderLeft:"3px solid "+zK.f,fontSize:12,color:L.sub,lineHeight:1.55}},_h("strong",{style:{color:L.text}},T.metaInfo),L2(zK.h))));
         rows.push(_h(Karte,{key:"a",titel:T.aktionsplan,symbol:"📋",farbe:L.blue},strat.akt.length===0?_h("div",{style:{color:L.green,fontWeight:700,fontSize:14,textAlign:"center",padding:8}},T.vollstaendig):_h("div",{style:{display:"flex",flexDirection:"column",gap:10}},strat.akt.map(function(a,i){return _h("div",{key:i,style:{display:"flex",gap:10,alignItems:"flex-start",padding:"11px 12px",background:L.inner,borderRadius:10,border:"1px solid "+a.f+"33",borderLeft:"3px solid "+a.f}},_h("div",{style:{width:22,height:22,borderRadius:"50%",background:a.f,color:"#fff",fontSize:11,fontWeight:900,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),_h("div",{style:{flex:1}},_h("div",{style:{fontSize:13,fontWeight:700,color:L.text,marginBottom:2}},a.text),_h("div",{style:{fontSize:11,color:L.sub,lineHeight:1.5}},a.detail)));}))));
+        var empf=calcEmpfehlung(z.konfigs,z.besitz,z.zielId,lang);
+        var topEmpf=empf.filter(function(e){return !e.fertig;}).slice(0,8);
+        if(topEmpf.length){
+          rows.push(_h(Karte,{key:"empf",titel:(lang==="de"?"Empfehlungsliste \u2013 was als N\u00e4chstes?":"Recommendation list \u2013 what next?"),symbol:"\ud83d\udccb",farbe:"#7c3aed"},
+            _h("div",{style:{fontSize:11,color:L.sub,marginBottom:10,lineHeight:1.5}},
+              lang==="de"?"Dynamisch nach Tier, Fortschritt und aktuellem Ziel sortiert. \u00c4ndert sich automatisch, wenn du Kommandanten weiterentwickelst.":"Sorted dynamically by tier, progress and current target. Updates automatically as you develop commanders."),
+            _h("div",{style:{display:"flex",flexDirection:"column",gap:7}},
+              topEmpf.map(function(e,i){
+                var istZiel=e.k.id===z.zielId;
+                return _h("div",{key:e.k.id,style:{display:"flex",gap:9,alignItems:"flex-start",padding:"9px 11px",
+                  background:istZiel?e.k.f+"0e":L.inner,borderRadius:10,
+                  border:"1px solid "+(istZiel?e.k.f+"55":L.border),borderLeft:"3px solid "+e.k.f}},
+                  _h("div",{style:{width:20,height:20,borderRadius:"50%",background:e.k.f,color:"#fff",
+                    fontSize:11,fontWeight:900,flexShrink:0,display:"flex",alignItems:"center",justifyContent:"center"}},i+1),
+                  _h("div",{style:{flex:1,minWidth:0}},
+                    _h("div",{style:{display:"flex",gap:6,alignItems:"center",flexWrap:"wrap",marginBottom:1}},
+                      _h("span",{style:{fontSize:14}},e.k.s),
+                      _h("span",{style:{fontWeight:800,fontSize:13,color:L.text}},e.k.name),
+                      _h("span",{style:{fontSize:9,fontWeight:700,color:e.k.f,background:e.k.f+"15",padding:"1px 6px",borderRadius:5}},e.k.tier+"-Tier"),
+                      istZiel?_h("span",{style:{fontSize:9,fontWeight:700,color:"#fff",background:L.gold,padding:"1px 6px",borderRadius:5}},lang==="de"?"\ud83c\udfaf Ziel":"\ud83c\udfaf Target"):null),
+                    _h("div",{style:{fontSize:11.5,fontWeight:700,color:e.k.f,marginBottom:1}},
+                      "Lv "+e.c.lv+" \u00b7 "+(e.c.stern+1)+"\u2605 \u2192 "+e.schritt),
+                    _h("div",{style:{fontSize:10.5,color:L.sub,lineHeight:1.45}},e.warum)));
+              })),
+            _h("div",{style:{marginTop:11,padding:"9px 11px",background:"#0e749015",borderRadius:9,borderLeft:"3px solid #0e7490"}},
+              _h("div",{style:{fontSize:11,fontWeight:700,color:"#0e7490",marginBottom:2}},lang==="de"?"\ud83c\udf81 Bonus-Tipp: Neue Legend\u00e4re freischalten":"\ud83c\udf81 Bonus tip: unlock new legendaries"),
+              _h("div",{style:{fontSize:10.5,color:L.sub,lineHeight:1.5}},
+                lang==="de"?"Jedes erstmalige Freischalten eines legend\u00e4ren Kommandanten l\u00f6st das Paket \u201eSchreiber der Geschichte\u201c mit g\u00fcnstigen universellen Skulpturen aus \u2013 mitnehmen, wenn Budget da ist. (Belegt: zuletzt bei Takeda Shingen.)":"Each first-time unlock of a legendary commander triggers the \u201cWrite of History\u201d bundle with cheap universal sculptures \u2013 grab it when budget allows. (Confirmed: recently with Takeda Shingen.)"))));
+        }
         var rst=calcRoster(z.zielId,z.konfigs,z.besitz,starExp,eB,lang);
         if(rst)rows.push(_h(Karte,{key:"r",titel:(lang==="de"?"Roster-Strategie":"Roster strategy"),symbol:"\ud83e\udded",farbe:"#7c3aed"},
           _h("div",{style:{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap",marginBottom:12,padding:"10px 12px",background:L.inner,borderRadius:10,border:"1px solid "+L.border}},
