@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.1",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.2",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.1",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.2",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -278,8 +278,8 @@ var TRUPPENTYPEN=[
    name:{de:"Kavallerie",en:"Cavalry"},
    stark:{de:"Bogenschützen ✓",en:"Archers ✓"},schwach:{de:"Infanterie ✗",en:"Infantry ✗"},
    info:{de:"Schnellste Truppe. Ideal für KvK-Angriffe. Schlägt Bogenschützen.",en:"Fastest troop. Ideal for KvK attacks. Beats archers."},
-   hauptPaar:{p1:"huo_qubing",p2:"arthur",q:"Meta ⭐⭐⭐",e:{de:"Huo Qubings Burst-DPS + Arthurs Combo-Talent = stärkstes Kavallerie-Paar 2025/26.",en:"Huo Qubing's burst DPS + Arthur's combo talent = strongest cavalry pair 2025/26."}},
-   altPaare:[{p1:"arthur",p2:"achilleus",q:"⭐⭐",e:{de:"Arthur + Achilleus Einzelziel-Burst.",en:"Arthur + Achilleus single-target burst."}},{p1:"nevsky",p2:"arthur",q:"⭐",e:{de:"Nevsky als Alternative zu Huo.",en:"Nevsky as alternative to Huo."}},{p1:"huo_qubing",p2:"liu_che",q:"⭐",e:{de:"Klassisch. Etwas schwächer.",en:"Classic. Slightly weaker."}}],
+   hauptPaar:{p1:"arthur",p2:"achilleus",q:"Meta ⭐⭐⭐",e:{de:"Artus führt, Achilles sekundär: gleicher Combo-Talentbaum = stärkste Ein-Kavallerie-Kombi 2025/26, höchster Combo-Schaden.",en:"Arthur leads, Achilles secondary: same Combo talent tree = strongest single-cavalry combo 2025/26, highest combo damage."}},
+   altPaare:[{p1:"arthur",p2:"huo_qubing",q:"⭐⭐",e:{de:"Huo Qubings Burst-DPS verstärkt Artus’ AOE – starke Alternative, solange Achilles im Aufbau ist.",en:"Huo Qubing’s burst DPS amplifies Arthur’s AOE – strong alternative while Achilles is being built."}},{p1:"nevsky",p2:"joan_p",q:"⭐⭐",e:{de:"Newski + Joan Prime: Top-Kavallerie offenes Feld mit Heilung.",en:"Nevsky + Joan Prime: top cavalry open field with healing."}},{p1:"huo_qubing",p2:"liu_che",q:"⭐",e:{de:"Klassisch. Etwas schwächer.",en:"Classic. Slightly weaker."}}],
    reihenfolge:[{id:"arthur",g:{de:"Universell – höchste Priorität",en:"Universal – top priority"}},{id:"huo_qubing",g:{de:"Stärkster Kavallerie-DPS",en:"Strongest cavalry DPS"}},{id:"achilleus",g:{de:"Starker Alternativpartner",en:"Strong alternative partner"}},{id:"nevsky",g:{de:"Alternative Hauptanführer",en:"Alternative main leader"}},{id:"liu_che",g:{de:"Solider Sekundär",en:"Solid secondary"}}],
    geeignet:["arthur","huo_qubing","liu_che","nevsky","minamoto","achilleus","richard","saladin","el_cid","cao_cao","gengis","alex_great","frederick","philip"],
    talent:{de:"Kavallerie-Angriff · Verteidigung · HP · Geschwindigkeit",en:"Cavalry attack · defense · HP · speed"},
@@ -410,7 +410,7 @@ function calcStrategie(zielId,konfigs,besitz,gold,starExp,lang){
       else break;
     }
     if(!expertise){var skTxt=sk.map(function(v){return v>0?v:"–";}).join("/");akt.push({typ:"skill",text:(de?("Skills auf 5/5/5/5 bringen"+(hatExp?" (Expertise)":"")):("Bring skills to 5/5/5/5"+(hatExp?" (expertise)":""))),detail:(de?"Aktuell "+skTxt+". Noch ca. "+skNoetig+" Skulpturen nötig ("+T.rar[rar]+": "+KO.join("/")+" je Stufe, "+(KO[0]+KO[1]+KO[2]+KO[3])+" je Skill). Upgrades treffen einen zufälligen freigeschalteten Skill – Freischaltung folgt den Sternen (bis 4★). Bei nur 1★ fließt alles garantiert in Skill 1; frühes Hochsternen hebt die Levelgrenze, macht Upgrades aber zufällig. Vorhanden: "+(zC.skulp||0)+" Skulpturen.":"Currently "+skTxt+". About "+skNoetig+" sculptures still needed ("+T.rar[rar]+": "+KO.join("/")+" per level, "+(KO[0]+KO[1]+KO[2]+KO[3])+" per skill). Upgrades hit a random unlocked skill – unlocks follow stars (up to 4 stars). At 1 star everything goes into skill 1; starring up early raises the level cap but randomizes upgrades. Owned: "+(zC.skulp||0)+" sculptures."),f:"#0891b2"});}
-    var paare=[];(zK.p||[]).forEach(function(pid){var pk=findKom(pid);if(!pk)return;var bes=!!besitz[pid];paare.push({pk:pk,bes:bes,pkC:bes?konfigs[pid]:null});});
+    var paare=[];partnerIds(zielId).forEach(function(pid){var pk=findKom(pid);if(!pk)return;var bes=!!besitz[pid];paare.push({pk:pk,bes:bes,pkC:bes?konfigs[pid]:null});});
     paare.forEach(function(it){
       if(!it.bes)akt.push({typ:"partner",text:(de?"Partner freischalten: "+it.pk.name:"Unlock partner: "+it.pk.name),detail:(de?"Bestes Paar mit "+nm+". Solange er fehlt, entfaltet das Paar nicht seine volle Stärke.":"Best pair with "+nm+". While missing, the pair lacks full strength."),f:L.red});
       else if(it.pkC&&it.pkC.stern<2)akt.push({typ:"partner",text:(de?"Partner "+it.pk.name+" auf 3★ bringen":"Bring "+it.pk.name+" to 3★"),detail:(de?"Aktuell "+SB[it.pkC.stern]+". Ab 3★ kann er als Sekundär mitgeführt werden.":"Currently "+SB[it.pkC.stern]+". From 3★ he can join as secondary."),f:"#6d28d9"});
@@ -467,6 +467,14 @@ function calcEmpfehlung(konfigs,besitz,lang){
 }
 
 
+// Partner-IDs aus PAAR_KOMB (zentrale Wahrheitsquelle), Fallback auf k.p
+function partnerIds(kid){
+  for(var i=0;i<PAAR_KOMB.length;i++){
+    if(PAAR_KOMB[i].id===kid)return PAAR_KOMB[i].pairs.map(function(pp){return pp.id;});
+  }
+  var k=findKom(kid);return (k&&k.p)?k.p:[];
+}
+
 // Dynamische Empfehlungsliste: was als Naechstes entwickeln?
 function calcEmpfehlung(konfigs,besitz,zielId,lang){
   var de=lang==="de";
@@ -511,7 +519,7 @@ function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
     var steps=[];
     // Partnerwahl: erster besessener aus der Empfehlungsliste, sonst Freischalt-Empfehlung
     var pOwn=null,pMiss=null;
-    (zK.p||[]).forEach(function(pid){var pk=findKom(pid);if(!pk)return;if(besitz[pid]&&!pOwn)pOwn={k:pk,c:konfigs[pid]};if(!besitz[pid]&&!pMiss)pMiss=pk;});
+    partnerIds(zielId).forEach(function(pid){var pk=findKom(pid);if(!pk)return;if(besitz[pid]&&!pOwn)pOwn={k:pk,c:konfigs[pid]};if(!besitz[pid]&&!pMiss)pMiss=pk;});
     // 0) Skill-Lock-Warnung fuers Ziel
     var zsk=zC.sk||[1,0,0,0];
     if(zC.stern===0&&zsk[0]<5){
@@ -562,9 +570,10 @@ function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
       var c=konfigs[k.id]; if(!c)return;
       var cap=levelCap(c.stern);
       var naheLv=null;
-      // Cap-erreichender Levelsprung ab Lv 40 (belegt: Artus Lv50, Gorgo Lv40)
-      if(cap>=40&&c.lv>=cap-6&&c.lv<cap)naheLv=cap;
-      if(naheLv||(naheLv===null&&false))meilen.push({n:k.name,lv:c.lv,zielLv:naheLv,zielStern:null});
+      // Cap-Sprung nur wenn dahinter noch ein Sterngate steht: Lv40->5*, Lv50->6*.
+      // Lv60 bei 6* ist Maximum ohne Gate -> KEIN Trigger (belegt: Caesar Lv60 6* = kein Paket).
+      if(cap>=40&&cap<60&&c.stern<5&&c.lv>=cap-6&&c.lv<cap)naheLv=cap;
+      if(naheLv)meilen.push({n:k.name,lv:c.lv,zielLv:naheLv,zielStern:null});
     });
     if(meilen.length){
       var mlist=meilen.map(function(m){
@@ -572,7 +581,7 @@ function calcRoster(zielId,konfigs,besitz,starExp,expBaende,lang){
         return m.n+" (Lv "+m.lv+"\u2192"+m.zielLv+")";
       }).join(", ");
       steps.push({text:de?"Meilenstein-Pakete: liquide bleiben":"Milestone bundles: stay liquid",
-        detail:(de?"Belegt durch deine Empirie: Cap-erreichende Levelspr\u00fcnge ab Lv 40 (Artus Lv 50 \u2192 \u201eKulturfolger\u201c, Gorgo Lv 40 \u2192 \u201eGlorreicher Anf\u00fchrer\u201c) sowie das Freischalten neuer Legend\u00e4rer l\u00f6sen wertvolle Kaufpakete mit universellen Skulpturen und Sternen aus (z.B. \u201eKulturfolger\u201c). Kurz davor: "+mlist+". Empfehlung: vor diesen Spr\u00fcngen etwas Budget/Edelsteine bereithalten, um ein erscheinendes Paket sofort mitnehmen und die Ressourcen direkt einsetzen zu k\u00f6nnen. Reines Hochleveln billiger Kommandanten l\u00f6st KEINE Pakete aus (empirisch widerlegt).":"Documented by your empirical data: cap-reaching level jumps from Lv 40 (Arthur Lv 50, Gorgo Lv 40) and unlocking new legendaries trigger valuable purchase bundles with universal sculptures and stars (e.g. \u201cKulturfolger\u201d). Close to one: "+mlist+". Recommendation: keep some budget/gems ready before these jumps to grab an appearing bundle and use its resources right away. Merely leveling cheap commanders triggers NO bundles (empirically falsified).")
+        detail:(de?"Belegt durch deine Empirie: Cap-erreichende Levelspr\u00fcnge ab Lv 40 (Artus Lv 50 \u2192 \u201eKulturfolger\u201c, Gorgo Lv 40 \u2192 \u201eGlorreicher Anf\u00fchrer\u201c) sowie das Freischalten neuer Legend\u00e4rer l\u00f6sen wertvolle Kaufpakete aus. Nur Cap-Spr\u00fcnge MIT Sterngate dahinter (Lv 40\u21925\u2605, Lv 50\u21926\u2605) triggern \u2013 Lv 60 bei 6\u2605 (Maximum) nicht (belegt: Caesar). Inhalt: universelle Skulpturen und Sternen aus (z.B. \u201eKulturfolger\u201c). Kurz davor: "+mlist+". Empfehlung: vor diesen Spr\u00fcngen etwas Budget/Edelsteine bereithalten, um ein erscheinendes Paket sofort mitnehmen und die Ressourcen direkt einsetzen zu k\u00f6nnen. Reines Hochleveln billiger Kommandanten l\u00f6st KEINE Pakete aus (empirisch widerlegt).":"Documented by your empirical data: cap-reaching level jumps from Lv 40 (Arthur Lv 50, Gorgo Lv 40) and unlocking new legendaries trigger valuable purchase bundles with universal sculptures and stars (e.g. \u201cKulturfolger\u201d). Close to one: "+mlist+". Recommendation: keep some budget/gems ready before these jumps to grab an appearing bundle and use its resources right away. Merely leveling cheap commanders triggers NO bundles (empirically falsified).")
         ,f:"#0e7490"});
     }
     // 4) Stopp-Liste
