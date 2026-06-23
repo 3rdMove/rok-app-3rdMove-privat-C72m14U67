@@ -37,7 +37,7 @@ var useState=React.useState,useEffect=React.useEffect,useMemo=React.useMemo,useR
 // ═══════════════════════════════════════════════
 var TXT={
   de:{
-    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.2",
+    kicker:"Rise of Kingdoms",appTitle:"Kommandant-Fortschrittsrechner",version:"Version 5.5",
     nKomm:"Kommandanten",saved:"✓ Gespeichert",saving:"Wird gespeichert…",saveErr:"⚠ Fehler",
     univSkulp:"✨ Universelle Sterne",univSub:"Vorrat nach Sorte",univEinzeln:"Einzeln",univGesegnet:"Gesegnet",univBuendel:"Bündel",univExp:"Star-EXP",univEmpfTitel:"💡 Welche Sterne wann einsetzen?",univEmpf:"Universelle Starlight-Sterne (goldene Sterne) gibt es in drei Sorten, die sich in Star-EXP und Glück beim Aufwerten unterscheiden: Einzeln = 100 EXP / +10% Glück, Gesegnet = 400 EXP / +20% Glück, Bündel = 800 EXP / +5% Glück. Faustregel: Gesegnete bringen das meiste Glück pro Stück – setze sie gezielt für den entscheidenden Schub zum nächsten Sternlevel ein. Bündel liefern die meiste rohe EXP als Grundstock, Einzelne füllen flexibel auf.",
     btnSave:"💾 Speichern",btnEI:"🔄 Export / Import",
@@ -81,7 +81,7 @@ var TXT={
     ]
   },
   en:{
-    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.2",
+    kicker:"Rise of Kingdoms",appTitle:"Commander Progress Calculator",version:"Version 5.5",
     nKomm:"commanders",saved:"✓ Saved",saving:"Saving…",saveErr:"⚠ Error",
     univSkulp:"✨ Universal Stars",univSub:"Stock by type",univEinzeln:"Single",univGesegnet:"Blessed",univBuendel:"Bundle",univExp:"Star XP",univEmpfTitel:"💡 Which stars to use when?",univEmpf:"Universal starlight stars (golden stars) come in three types differing in star XP and luck on upgrades: Single = 100 XP / +10% luck, Blessed = 400 XP / +20% luck, Bundle = 800 XP / +5% luck. Rule of thumb: Blessed give the most luck per piece – use them for the decisive push to the next star level. Bundles provide the most raw XP as a base, singles top up flexibly.",
     btnSave:"💾 Save",btnEI:"🔄 Export / Import",
@@ -132,8 +132,8 @@ var TXT={
 var TIER_META={S:{farbe:"#7c3aed",bg:"#ede9fe"},A:{farbe:"#b45309",bg:"#fef3c7"},B:{farbe:"#1d4ed8",bg:"#dbeafe"},C:{farbe:"#4b5563",bg:"#f3f4f6"},D:{farbe:"#8E8E93",bg:"#F2F2F7"}};
 
 var KOM=[
-  {id:"arthur",name:"Artus Pendragon",tier:"S",f:"#7c3aed",s:"⚜️",r:{de:"Kavallerie · Combo",en:"Cavalry · Combo"},h:{de:"Stärkster Kommandant 2025/26. Combo-Talent passt zu jedem Typ.",en:"Strongest commander 2025/26. Combo talent fits any type."},p:["huo_qubing","achilleus","nevsky"],rar:"leg"},
-  {id:"huo_qubing",name:"Huo Qubing",tier:"S",f:"#d97706",s:"⚔️",r:{de:"Kavallerie · Burst",en:"Cavalry · Burst"},h:{de:"Stärkster Kavallerie-DPS. Meta-Paar: Huo + Arthur.",en:"Strongest cavalry DPS. Meta pair: Huo + Arthur."},p:["arthur","liu_che"],rar:"leg"},
+  {id:"arthur",name:"Artus Pendragon",tier:"S",f:"#7c3aed",s:"⚜️",r:{de:"Kavallerie · Combo",en:"Cavalry · Combo"},h:{de:"Stärkster Kommandant 2025/26. Combo-Talent passt zu jedem Typ.",en:"Strongest commander 2025/26. Combo talent fits any type."},p:["achilleus","huo_qubing","nevsky"],rar:"leg"},
+  {id:"huo_qubing",name:"Huo Qubing",tier:"S",f:"#d97706",s:"⚔️",r:{de:"Kavallerie · Burst",en:"Cavalry · Burst"},h:{de:"Stärkster Kavallerie-Burst-DPS. Starke Alternative zu Achilles an Artus.",en:"Strongest cavalry burst DPS. Strong alternative to Achilles for Arthur."},p:["arthur","liu_che"],rar:"leg"},
   {id:"bai_qi",name:"Bai Qi",tier:"S",f:"#dc2626",s:"🗡️",r:{de:"Infanterie · Angriff",en:"Infantry · Attack"},h:{de:"Absoluter Infanterie-Topwert. Bai Qi + Liu Che = Meta.",en:"Top infantry value. Bai Qi + Liu Che = meta."},p:["liu_che","philip"],rar:"leg"},
   {id:"gang_gamchan",name:"Gang Gamchan",tier:"S",f:"#065f46",s:"🥋",r:{de:"Kavallerie · Combo",en:"Cavalry · Combo"},h:{de:"Aufsteigender S-Tier 2025/26. Mit Arthur stark.",en:"Rising S-tier 2025/26. Strong with Arthur."},p:["arthur","bai_qi"],rar:"leg"},
   {id:"qin_shi",name:"Qin Shi Huang",tier:"S",f:"#991b1b",s:"🏯",r:{de:"Bogenschützen · Kontrolle",en:"Archers · Control"},h:{de:"Stärkster Bogenschützen-Anführer.",en:"Strongest archer leader."},p:["zhuge_liang","p_hermann"],rar:"leg"},
@@ -280,7 +280,7 @@ var TRUPPENTYPEN=[
    info:{de:"Schnellste Truppe. Ideal für KvK-Angriffe. Schlägt Bogenschützen.",en:"Fastest troop. Ideal for KvK attacks. Beats archers."},
    hauptPaar:{p1:"arthur",p2:"achilleus",q:"Meta ⭐⭐⭐",e:{de:"Artus führt, Achilles sekundär: gleicher Combo-Talentbaum = stärkste Ein-Kavallerie-Kombi 2025/26, höchster Combo-Schaden.",en:"Arthur leads, Achilles secondary: same Combo talent tree = strongest single-cavalry combo 2025/26, highest combo damage."}},
    altPaare:[{p1:"arthur",p2:"huo_qubing",q:"⭐⭐",e:{de:"Huo Qubings Burst-DPS verstärkt Artus’ AOE – starke Alternative, solange Achilles im Aufbau ist.",en:"Huo Qubing’s burst DPS amplifies Arthur’s AOE – strong alternative while Achilles is being built."}},{p1:"nevsky",p2:"joan_p",q:"⭐⭐",e:{de:"Newski + Joan Prime: Top-Kavallerie offenes Feld mit Heilung.",en:"Nevsky + Joan Prime: top cavalry open field with healing."}},{p1:"huo_qubing",p2:"liu_che",q:"⭐",e:{de:"Klassisch. Etwas schwächer.",en:"Classic. Slightly weaker."}}],
-   reihenfolge:[{id:"arthur",g:{de:"Universell – höchste Priorität",en:"Universal – top priority"}},{id:"huo_qubing",g:{de:"Stärkster Kavallerie-DPS",en:"Strongest cavalry DPS"}},{id:"achilleus",g:{de:"Starker Alternativpartner",en:"Strong alternative partner"}},{id:"nevsky",g:{de:"Alternative Hauptanführer",en:"Alternative main leader"}},{id:"liu_che",g:{de:"Solider Sekundär",en:"Solid secondary"}}],
+   reihenfolge:[{id:"arthur",g:{de:"Universell – höchste Priorität",en:"Universal – top priority"}},{id:"achilleus",g:{de:"Top-Partner: gleicher Combo-Talentbaum",en:"Top partner: same Combo talent tree"}},{id:"huo_qubing",g:{de:"Starke Alternative: Kavallerie-Burst-DPS",en:"Strong alternative: cavalry burst DPS"}},{id:"nevsky",g:{de:"Alternative Hauptanführer",en:"Alternative main leader"}},{id:"liu_che",g:{de:"Solider Sekundär",en:"Solid secondary"}}],
    geeignet:["arthur","huo_qubing","liu_che","nevsky","minamoto","achilleus","richard","saladin","el_cid","cao_cao","gengis","alex_great","frederick","philip"],
    talent:{de:"Kavallerie-Angriff · Verteidigung · HP · Geschwindigkeit",en:"Cavalry attack · defense · HP · speed"},
    tipps:{de:["Arthur zuerst auf 5★ – universell für Kavallerie und Infanterie","Huo Qubings Talentbaum auf Kavallerie-Schaden ausrichten","Kavallerie ist anfällig gegen starke Infanterie-Paare"],en:["Arthur to 5★ first – universal for cavalry and infantry","Set Huo Qubing's talent tree to cavalry damage","Cavalry is vulnerable to strong infantry pairs"]}},
@@ -822,6 +822,232 @@ function App(){
 
   
 
+var TALENTBAUM={
+  "arthur":{accent:"gold",zweig:{de:"\u2694\ufe0f COMBO-ZWEIG",en:"\u2694\ufe0f COMBO BRANCH"},
+    zsub:{de:"Zuerst voll ausbauen \u2013 hier kommt der meiste Schaden her",en:"Max first \u2013 most damage comes from here"},
+    build:{de:"Combo + Kavallerie",en:"Combo + Cavalry"},modus:{de:"Prim\u00e4r, offenes Feld",en:"Primary, open field"},
+    quellen:"AllClash, TouchscreenGaming, RoK.hokbuild, RiseofKingdomsGuides",
+    rows:[
+      [{e:"\u2694\ufe0f",p:"5/5",l:{de:"Combo-Meisterschaft",en:"Combo Mastery"},st:"picked"}],
+      [{e:"\u26a1",p:"5/5",l:{de:"Schneller Schlag",en:"Quick Strike"},st:"picked"},{e:"\ud83d\udd04",p:"3/3",l:{de:"Wiederholung",en:"Relentless Assault"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"Erbarmloser Angriff",en:"Relentless"},st:"picked"}],
+      [{e:"\u2699\ufe0f",p:"1/1",l:{de:"Eisen & Stahl",en:"Iron & Steel"},st:"picked",key:true}]
+    ],
+    pfad:{de:"Den Combo-Zweig komplett bis \u201eEisen & Stahl\u201c durchziehen \u2013 Pflicht, weil das finale Talent nur bei voller Investition freigeschaltet wird und den Gro\u00dfteil des Schadens liefert. Danach Kavallerie-Zweig: Rage-Regen + Marschtempo.",
+      en:"Take the Combo branch fully to \u201cIron & Steel\u201d \u2013 mandatory since the final talent only unlocks at full investment and provides most of the damage. Then cavalry branch: rage regen + march speed."},
+    order:[{de:"1. Combo \u2192 Eisen & Stahl",en:"1. Combo \u2192 Iron & Steel"},{de:"2. Kavallerie: Wut + Tempo",en:"2. Cavalry: fury + speed"}],
+    skill:{de:"Skill-Priorit\u00e4t: S1 zuerst auf 5.",en:"Skill priority: S1 to 5 first."}},
+  "achilleus":{accent:"gold",zweig:{de:"\u2694\ufe0f COMBO \u2192 \ud83c\udfc7 KAVALLERIE",en:"\u2694\ufe0f COMBO \u2192 \ud83c\udfc7 CAVALRY"},
+    zsub:{de:"Combo zuerst (1 Pkt Schl\u00fcssel), dann voll Kavallerie",en:"Combo first (1 pt key), then full cavalry"},
+    build:{de:"Combo + Kavallerie",en:"Combo + Cavalry"},modus:{de:"Prim\u00e4r in 2-Kav-Setups, sonst sekund\u00e4r zu Artus",en:"Primary in 2-cav setups, else secondary to Arthur"},
+    quellen:"TouchscreenGaming, RiseofKingdomsGuides, LootBar, AllClash",
+    rows:[
+      [{e:"\u2694\ufe0f",p:"5/5",l:{de:"Combo-Meisterschaft",en:"Combo Mastery"},st:"picked"}],
+      [{e:"\u26a1",p:"5/5",l:{de:"Schneller Schlag",en:"Quick Strike"},st:"picked"},{e:"\ud83d\udd04",p:"3/3",l:{de:"Wiederholung",en:"Repeat"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"3/3",l:{de:"Erbarmloser Angriff",en:"Relentless"},st:"picked"},{e:"\u2699\ufe0f",p:"1/1",l:{de:"Eisen & Stahl",en:"Iron & Steel"},st:"picked",key:true}],
+      [{e:"\ud83c\udfc7",p:"0/5",l:{de:"Kavallerie-Angriff",en:"Cavalry Attack"},st:"avail"},{e:"\ud83d\udc0e",p:"0/3",l:{de:"Marschtempo",en:"March Speed"},st:"avail"}]
+    ],
+    pfad:{de:"Combo-Zweig zuerst bis \u201eEisen & Stahl\u201c (l\u00f6st Zusatz-Combo aus) \u2013 aber nur 1 Punkt, da die Ausl\u00f6se-Chance nicht weiter steigt. Danach komplett Kavallerie: +40% Angriff, +20% Marschtempo.",
+      en:"Combo branch first to \u201cIron & Steel\u201d (triggers extra combo) \u2013 but only 1 point, the trigger chance doesn\u2019t increase further. Then full cavalry: +40% attack, +20% march speed."},
+    order:[{de:"1. Combo \u2192 Eisen & Stahl (1 Pkt)",en:"1. Combo \u2192 Iron & Steel (1 pt)"},{de:"2. Kavallerie voll (+40%)",en:"2. Full cavalry (+40%)"}],
+    skill:{de:"S1 \u201ePel\u00ebusspeer\u201c zuerst. Spielbar ab 5-5-1-1, Ziel 5-5-5-5. Bester Partner: Artus. Formation: Delta.",
+      en:"S1 \u201cPelean Spear\u201d first. Playable at 5-5-1-1, target 5-5-5-5. Best partner: Arthur. Formation: Delta."}},
+  "aethelflaed":{accent:"gold",zweig:{de:"\ud83d\udc51 ANF\u00dcHRUNGS-ZWEIG",en:"\ud83d\udc51 LEADERSHIP BRANCH"},
+    zsub:{de:"Debuff-Synergie \u2013 st\u00e4rkt ihren m\u00e4chtigen S1",en:"Debuff synergy \u2013 boosts her powerful S1"},
+    build:{de:"Anf\u00fchrung (Leadership)",en:"Leadership"},modus:{de:"Debuff & Kontrolle, offenes Feld + Canyon",en:"Debuff & control, open field + canyon"},
+    quellen:"TouchscreenGaming, RiseofKingdomsGuides, RoK.hokbuild, Heaven-Guardian",
+    rows:[
+      [{e:"\ud83c\udff9",p:"5/5",l:{de:"Pfeil aus Eisen (S1)",en:"Arrow of Iron (S1)"},st:"picked"}],
+      [{e:"\ud83d\udcaa",p:"4/4",l:{de:"Strategische F\u00e4higkeit",en:"Strategic Prowess"},st:"picked"},{e:"\ud83d\udee1\ufe0f",p:"4/4",l:{de:"Enge Formation",en:"Close Formation"},st:"picked"}],
+      [{e:"\ud83d\ude24",p:"3/3",l:{de:"Verborgener Zorn",en:"Hidden Wrath"},st:"picked"},{e:"\u26a1",p:"3/3",l:{de:"Lockere Formation",en:"Loose Formation"},st:"picked"}],
+      [{e:"\ud83d\udc51",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]
+    ],
+    pfad:{de:"Zuerst die Anf\u00fchrungs-Talente bis zum Schl\u00fcsseltalent \u2013 \u201eStrategische F\u00e4higkeit\u201c (Verteidigung nach Skill) und \u201eEnge Formation\u201c (Angriffstempo bei 50% HP). Punkte in Peacekeeping/Support erst danach.",
+      en:"First the leadership talents up to the key talent \u2013 \u201cStrategic Prowess\u201d (defense after skill) and \u201cClose Formation\u201d (attack speed at 50% HP). Peacekeeping/Support points only after."},
+    order:[{de:"1. Leadership voll",en:"1. Leadership full"},{de:"2. Schl\u00fcsseltalent",en:"2. Key talent"},{de:"3. Support-Reste",en:"3. Support rest"}],
+    skill:{de:"S1 \u201ePfeil aus Eisen\u201c (\u221230% Werte, 5 Ziele) IMMER zuerst auf 5, dann Expertise (+20% gg. verlangsamte Ziele). Barb-Farm: 5-1-5-5 m\u00f6glich.",
+      en:"S1 \u201cArrow of Iron\u201d (\u221230% stats, 5 targets) ALWAYS to 5 first, then expertise (+20% vs slowed). Barb farm: 5-1-5-5 possible."}},
+  "joan":{accent:"blue",zweig:{de:"\u2696\ufe0f UNTERST\u00dcTZUNGS-ZWEIG",en:"\u2696\ufe0f SUPPORT BRANCH"},
+    zsub:{de:"Buff-Fokus \u2013 Johannas Kernst\u00e4rke",en:"Buff focus \u2013 Joan\u2019s core strength"},
+    build:{de:"Unterst\u00fctzung (Support)",en:"Support"},modus:{de:"Sekund\u00e4r-Buffer hinter robustem Prim\u00e4r",en:"Secondary buffer behind robust primary"},
+    quellen:"AllClash, RiseofKingdomsGuides, RiseofKingdoms.guide, Heaven-Guardian",
+    rows:[
+      [{e:"\u2728",p:"5/5",l:{de:"Verj\u00fcngung",en:"Rejuvenate"},st:"picked"}],
+      [{e:"\ud83d\udee1\ufe0f",p:"3/3",l:{de:"Notfall-Schutz",en:"Emergency Protection"},st:"picked"},{e:"\u2695\ufe0f",p:"3/3",l:{de:"Elixier",en:"Elixir"},st:"picked"}],
+      [{e:"\ud83d\udd25",p:"3/3",l:{de:"Brennendes Blut",en:"Burning Blood"},st:"picked"},{e:"\u2694\ufe0f",p:"3/3",l:{de:"Gegenangriff",en:"Counterattack"},st:"picked"}],
+      [{e:"\ud83c\udf3f",p:"1/1",l:{de:"Dornenk\u00e4fig",en:"Cage of Thorns"},st:"picked",key:true}]
+    ],
+    pfad:{de:"Unterst\u00fctzungs-Zweig: zuerst \u201eVerj\u00fcngung\u201c (nur 2\u20133 Punkte, sonst \u00fcber Rage-Cap), dann \u201eNotfall-Schutz\u201c gegen Schadensspitzen, weiter bis \u201eDornenk\u00e4fig\u201c.",
+      en:"Support branch: first \u201cRejuvenate\u201d (only 2\u20133 points, else over rage cap), then \u201cEmergency Protection\u201d vs damage spikes, on to \u201cCage of Thorns\u201d."},
+    order:[{de:"1. Verj\u00fcngung (2\u20133)",en:"1. Rejuvenate (2\u20133)"},{de:"2. Notfall-Schutz",en:"2. Emergency Prot."},{de:"3. bis Dornenk\u00e4fig",en:"3. to Cage of Thorns"}],
+    skill:{de:"\u26a0\ufe0f Reine Unterst\u00fctzerin, kaum Verteidigung \u2013 als Sekund\u00e4r hinter robustem Prim\u00e4r (Karl Martell, Richard). F\u00fcr Duelle ungeeignet. Du besitzt die epische Johanna (nicht Prime). S1 \u201eG\u00f6ttliche Offenbarung\u201c zuerst.",
+      en:"\u26a0\ufe0f Pure supporter, low defense \u2013 use as secondary behind a robust primary (Charles Martel, Richard). Unsuitable for duels. You own epic Joan (not Prime). S1 \u201cDivine Revelation\u201d first."}}
+  ,"liu_che":{accent:"gold",zweig:{de:"\u2694\ufe0f INFANTERIE-ZWEIG",en:"\u2694\ufe0f INFANTRY BRANCH"},
+    zsub:{de:"Klassischer Infanterie-DPS-Pfad, offenes Feld",en:"Classic infantry DPS path, open field"},
+    build:{de:"Infanterie",en:"Infantry"},modus:{de:"Sekund\u00e4r (Talentbaum schw\u00e4cher als Partner)",en:"Secondary (talent tree weaker than partner)"},
+    quellen:"AllClash, RiseofKingdomsGuides, TouchscreenGaming",
+    rows:[[{e:"\u2694\ufe0f",p:"5/5",l:{de:"Infanterie-Angriff",en:"Infantry Attack"},st:"picked"}],
+      [{e:"\ud83d\udee1\ufe0f",p:"3/3",l:{de:"Verteidigung",en:"Defense"},st:"picked"},{e:"\ud83d\udca5",p:"3/3",l:{de:"Schmetterschaden",en:"Smite Damage"},st:"picked"}],
+      [{e:"\u2764\ufe0f",p:"5/5",l:{de:"Gesundheit",en:"Health"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Klassischer Infanterie-Pfad: Angriff \u2192 Verteidigung/Schmetterschaden \u2192 Gesundheit bis zum Schl\u00fcsseltalent. Liu Che ist als Sekund\u00e4r am besten \u2013 sein eigener Talentbaum ist schw\u00e4cher als der seiner Partner.",
+      en:"Classic infantry path: attack \u2192 defense/smite \u2192 health to the key talent. Liu Che is best as secondary \u2013 his own tree is weaker than his partners\u2019."},
+    order:[{de:"1. Infanterie-Angriff",en:"1. Infantry attack"},{de:"2. Def/Schmetter",en:"2. Def/smite"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 \u201eRuhm des Shizong\u201c (5-Ziel-AoE, Schmetterschaden + Verlangsamung) zuerst auf 5. Bester Partner: Gorgo (deren Talentbaum nutzen, Gorgo prim\u00e4r).",
+      en:"S1 \u201cGlory of Shizong\u201d (5-target AoE, smite + slow) to 5 first. Best partner: Gorgo (use her tree, Gorgo primary)."}}
+  ,"gorgo":{accent:"gold",zweig:{de:"\u2694\ufe0f INFANTERIE-ZWEIG",en:"\u2694\ufe0f INFANTRY BRANCH"},
+    zsub:{de:"Schmetterschaden-Fokus, offenes Feld + Garnison",en:"Smite focus, open field + garrison"},
+    build:{de:"Infanterie (Schmettern)",en:"Infantry (Smite)"},modus:{de:"Prim\u00e4r neben Liu Che",en:"Primary alongside Liu Che"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\ud83d\udca5",p:"5/5",l:{de:"Schmetterschaden",en:"Smite Damage"},st:"picked"}],
+      [{e:"\u2694\ufe0f",p:"4/4",l:{de:"Infanterie-Angriff",en:"Infantry Attack"},st:"picked"},{e:"\ud83d\udee1\ufe0f",p:"3/3",l:{de:"Verteidigung",en:"Defense"},st:"picked"}],
+      [{e:"\u2764\ufe0f",p:"3/3",l:{de:"Gesundheit",en:"Health"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Schmetterschaden-Pfad ausbauen \u2013 Gorgos Kernmechanik. Sie braucht mindestens zwei Infanterie-M\u00e4rsche, damit ihr Debuff skaliert. Schwach gegen Bogen-Meta.",
+      en:"Build the smite path \u2013 Gorgo\u2019s core mechanic. She needs at least two infantry marches so her debuff scales. Weak vs archer meta."},
+    order:[{de:"1. Schmetterschaden",en:"1. Smite damage"},{de:"2. Angriff/Def",en:"2. Attack/def"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"\u26a0\ufe0f Talentbaum schwach, kaum Marschtempo \u2013 nur f\u00fcr P2W oder Defense-F2P sinnvoll. Einziger echter Partner: Liu Che (Gorgo prim\u00e4r). Garnison: Flavius.",
+      en:"\u26a0\ufe0f Weak tree, low march speed \u2013 only worthwhile for P2W or defense-F2P. Only real partner: Liu Che (Gorgo primary). Garrison: Flavius."}}
+  ,"leonidas":{accent:"blue",zweig:{de:"\ud83d\udee1\ufe0f VERTEIDIGUNGS-ZWEIG",en:"\ud83d\udee1\ufe0f DEFENSE BRANCH"},
+    zsub:{de:"\u00dcberleben & Schadensreduktion, Anti-Skill",en:"Survivability & damage reduction, anti-skill"},
+    build:{de:"Verteidigung + Infanterie",en:"Defense + Infantry"},modus:{de:"Sekund\u00e4r-Tank, spielbar ab 5/5/1/1",en:"Secondary tank, playable at 5/5/1/1"},
+    quellen:"AllClash, RiseofKingdomsGuides, Heaven-Guardian",
+    rows:[[{e:"\ud83d\udee1\ufe0f",p:"5/5",l:{de:"Schadensreduktion",en:"Damage Reduction"},st:"picked"}],
+      [{e:"\u2764\ufe0f",p:"4/4",l:{de:"Gesundheit",en:"Health"},st:"picked"},{e:"\ud83d\udd31",p:"3/3",l:{de:"Schild-Effekt",en:"Shield Effect"},st:"picked"}],
+      [{e:"\u2694\ufe0f",p:"3/3",l:{de:"Infanterie-Angriff",en:"Infantry Attack"},st:"avail"}],
+      [{e:"\ud83d\udc51",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Verteidigungs-Zweig fokussieren \u2013 maximale Schadensreduktion f\u00fcr sich und Verb\u00fcndete, dann Infanterie-Erg\u00e4nzung. Stark gegen Skill-Schaden-Kommandanten (Attila, Takeda).",
+      en:"Focus the defense branch \u2013 maximum damage reduction for self and allies, then infantry supplement. Strong against skill-damage commanders (Attila, Takeda)."},
+    order:[{de:"1. Schadensreduktion",en:"1. Damage reduction"},{de:"2. Schild/HP",en:"2. Shield/HP"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"Spielbar ab 5/5/1/1 (F2P-freundlich). Reiner Sekund\u00e4r-Tank, niedrige Mobilit\u00e4t. Bester Prim\u00e4r-Partner: Guan Yu. Auch Harald.",
+      en:"Playable at 5/5/1/1 (F2P-friendly). Pure secondary tank, low mobility. Best primary partner: Guan Yu. Also Harald."}}
+  ,"huo_qubing":{accent:"gold",zweig:{de:"\ud83c\udfc7 KAVALLERIE-ZWEIG",en:"\ud83c\udfc7 CAVALRY BRANCH"},
+    zsub:{de:"Einzelziel-Burst-DPS, offenes Feld",en:"Single-target burst DPS, open field"},
+    build:{de:"Kavallerie + Fertigkeit",en:"Cavalry + Skill"},modus:{de:"Prim\u00e4r (S1 nur als Prim\u00e4r voll wirksam)",en:"Primary (S1 full effect only as primary)"},
+    quellen:"AllClash, RiseofKingdomsGuides, TechGamesNews",
+    rows:[[{e:"\ud83c\udfc7",p:"5/5",l:{de:"Kavallerie-Angriff",en:"Cavalry Attack"},st:"picked"}],
+      [{e:"\u26a1",p:"3/3",l:{de:"Fertigkeitsschaden",en:"Skill Damage"},st:"picked"},{e:"\ud83d\udc0e",p:"3/3",l:{de:"Marschtempo",en:"March Speed"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"Burst-Schaden",en:"Burst Damage"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Kavallerie-Zweig mit Fertigkeitsschaden-Fokus \u2013 Huo ist ein reiner Einzelziel-Nuker. Marschtempo f\u00fcr Hit-and-Run. Als Prim\u00e4r spielen, sonst halbiert sich sein S1-Schaden.",
+      en:"Cavalry branch with skill-damage focus \u2013 Huo is a pure single-target nuker. March speed for hit-and-run. Play as primary, otherwise his S1 damage halves."},
+    order:[{de:"1. Kavallerie-Angriff",en:"1. Cavalry attack"},{de:"2. Skill/Tempo",en:"2. Skill/speed"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5 (Einzelziel 2700 DF + Verlangsamung). Bester Partner: Nevsky oder Artus (dann Huo sekund\u00e4r). Vorsicht: wird im Feld fokussiert.",
+      en:"S1 to 5 first (single-target 2700 DF + slow). Best partner: Nevsky or Arthur (Huo secondary then). Caution: focused in the field."}}
+  ,"sun_tzu":{accent:"gold",zweig:{de:"\u2694\ufe0f INFANTERIE-ZWEIG",en:"\u2694\ufe0f INFANTRY BRANCH"},
+    zsub:{de:"AoE + Rage-Engine, vielseitig",en:"AoE + rage engine, versatile"},
+    build:{de:"Infanterie / Fertigkeit",en:"Infantry / Skill"},modus:{de:"Vielseitig, auch als Sekund\u00e4r",en:"Versatile, also as secondary"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\u26a1",p:"5/5",l:{de:"Fertigkeitsschaden",en:"Skill Damage"},st:"picked"}],
+      [{e:"\u2694\ufe0f",p:"3/3",l:{de:"Infanterie-Angriff",en:"Infantry Attack"},st:"picked"},{e:"\ud83d\udd04",p:"3/3",l:{de:"Rage-Regen",en:"Rage Regen"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"AoE-Schaden",en:"AoE Damage"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Fertigkeits-/Infanterie-Pfad \u2013 Sun Tzu liefert AoE-Schaden und eine starke Rage-Engine, die Partner h\u00e4ufiger zaubern l\u00e4sst. Nur ein Skill ist infanterie-gebunden, daher flexibel einsetzbar.",
+      en:"Skill/infantry path \u2013 Sun Tzu provides AoE damage and a strong rage engine that lets partners cast more often. Only one skill is infantry-bound, so flexible."},
+    order:[{de:"1. Fertigkeitsschaden",en:"1. Skill damage"},{de:"2. Angriff/Rage",en:"2. Attack/rage"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Sehr vielseitig: als Sekund\u00e4r mit jeder Armee. Top-Partner: YSG (AoE-Wahnsinn), Aethelflaed, Saladin.",
+      en:"S1 to 5 first. Very versatile: as secondary with any army. Top partner: YSG (AoE madness), Aethelflaed, Saladin."}}
+  ,"p_hermann":{accent:"gold",zweig:{de:"\ud83c\udff9 BOGEN-ZWEIG",en:"\ud83c\udff9 ARCHER BRANCH"},
+    zsub:{de:"Bogen-AoE + Schweigen, offenes Feld + Rally",en:"Archer AoE + silence, open field + rally"},
+    build:{de:"Bogen (Hermann Prime)",en:"Archer (Hermann Prime)"},modus:{de:"Prim\u00e4r, Top-Bogen 2025/26",en:"Primary, top archer 2025/26"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\ud83c\udff9",p:"5/5",l:{de:"Bogen-Angriff",en:"Archer Attack"},st:"picked"}],
+      [{e:"\u26a1",p:"3/3",l:{de:"Fertigkeitsschaden",en:"Skill Damage"},st:"picked"},{e:"\ud83d\udd07",p:"3/3",l:{de:"Schweigen",en:"Silence"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"AoE-Schaden",en:"AoE Damage"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Bogen-Zweig mit Fertigkeitsschaden \u2013 Hermann Prime ist der Top-Bogen-Kommandant 2025/26 mit massiven Pfeilsalven und Ketten-Schweigen (Anti-Kavallerie).",
+      en:"Archer branch with skill damage \u2013 Hermann Prime is the top archer commander 2025/26 with massive arrow storms and chain silence (anti-cavalry)."},
+    order:[{de:"1. Bogen-Angriff",en:"1. Archer attack"},{de:"2. Skill/Schweigen",en:"2. Skill/silence"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Top-Partner: Zhuge Liang (st\u00e4rkstes Bogen-Paar), auch Boudica Prime.",
+      en:"S1 to 5 first. Top partner: Zhuge Liang (strongest archer pair), also Boudica Prime."}}
+  ,"william":{accent:"gold",zweig:{de:"\u2694\ufe0f INFANTERIE-ZWEIG",en:"\u2694\ufe0f INFANTRY BRANCH"},
+    zsub:{de:"AoE + Rage, robuster Infanterie-Allrounder",en:"AoE + rage, robust infantry all-rounder"},
+    build:{de:"Infanterie",en:"Infantry"},modus:{de:"Vielseitig, Prim\u00e4r oder Sekund\u00e4r",en:"Versatile, primary or secondary"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\u2694\ufe0f",p:"5/5",l:{de:"Infanterie-Angriff",en:"Infantry Attack"},st:"picked"}],
+      [{e:"\ud83d\udee1\ufe0f",p:"3/3",l:{de:"Verteidigung",en:"Defense"},st:"picked"},{e:"\ud83d\udd04",p:"3/3",l:{de:"Rage-Regen",en:"Rage Regen"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"AoE-Schaden",en:"AoE Damage"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Infanterie-Pfad mit AoE und Rage-Regen \u2013 William Wallace ist ein robuster Allrounder. Seine Synergie mit Liu Che ergibt eine der besten offenen-Feld-Paarungen.",
+      en:"Infantry path with AoE and rage regen \u2013 William Wallace is a robust all-rounder. His synergy with Liu Che is one of the best open-field pairings."},
+    order:[{de:"1. Infanterie-Angriff",en:"1. Infantry attack"},{de:"2. Def/Rage",en:"2. Def/rage"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Top-Partner: Liu Che, auch Sun Tzu Prime.",en:"S1 to 5 first. Top partner: Liu Che, also Sun Tzu Prime."}}
+  ,"minamoto":{accent:"gold",zweig:{de:"\ud83c\udfc7 KAVALLERIE-ZWEIG",en:"\ud83c\udfc7 CAVALRY BRANCH"},
+    zsub:{de:"Mobiler Kavallerie-DPS (Museums-Buff)",en:"Mobile cavalry DPS (museum buff)"},
+    build:{de:"Kavallerie",en:"Cavalry"},modus:{de:"Sekund\u00e4r-DPS, hohe Mobilit\u00e4t",en:"Secondary DPS, high mobility"},
+    quellen:"AllClash, TechGamesNews",
+    rows:[[{e:"\ud83c\udfc7",p:"5/5",l:{de:"Kavallerie-Angriff",en:"Cavalry Attack"},st:"picked"}],
+      [{e:"\ud83d\udc0e",p:"3/3",l:{de:"Marschtempo",en:"March Speed"},st:"picked"},{e:"\u26a1",p:"3/3",l:{de:"Fertigkeitsschaden",en:"Skill Damage"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"Burst-Schaden",en:"Burst Damage"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Kavallerie-Pfad mit Marschtempo und Fertigkeitsschaden \u2013 durch den Museums-Buff wieder konkurrenzf\u00e4hig, viel Schaden + Mobilit\u00e4t. Lohnt v.a. wenn fr\u00fch gemaxt.",
+      en:"Cavalry path with march speed and skill damage \u2013 competitive again thanks to the museum buff, lots of damage + mobility. Worthwhile mainly if maxed early."},
+    order:[{de:"1. Kavallerie-Angriff",en:"1. Cavalry attack"},{de:"2. Tempo/Skill",en:"2. Speed/skill"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Gut hinter Huo Qubing oder Cao Cao (Barbaren-Jagd).",en:"S1 to 5 first. Good behind Huo Qubing or Cao Cao (barbarian hunting)."}}
+  ,"richard":{accent:"blue",zweig:{de:"\ud83d\udee1\ufe0f VERTEIDIGUNGS-ZWEIG",en:"\ud83d\udee1\ufe0f DEFENSE BRANCH"},
+    zsub:{de:"Heilung + Schild, robuster Anf\u00fchrer",en:"Healing + shield, robust leader"},
+    build:{de:"Verteidigung / Anf\u00fchrung",en:"Defense / Leadership"},modus:{de:"Tank-Prim\u00e4r, sehr ausdauernd",en:"Tank primary, very durable"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\ud83d\udee1\ufe0f",p:"5/5",l:{de:"Schadensreduktion",en:"Damage Reduction"},st:"picked"}],
+      [{e:"\u2695\ufe0f",p:"4/4",l:{de:"Heilung",en:"Healing"},st:"picked"},{e:"\u2764\ufe0f",p:"3/3",l:{de:"Gesundheit",en:"Health"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"3/3",l:{de:"Schild-Effekt",en:"Shield Effect"},st:"picked"}],
+      [{e:"\ud83d\udc51",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Verteidigungs-/Anf\u00fchrungspfad \u2013 Richard ist ein extrem z\u00e4her Tank mit Heilung und Schild. Macht jede Paarung deutlich ausdauernder.",
+      en:"Defense/leadership path \u2013 Richard is an extremely tanky commander with healing and shield. Makes any pairing far more durable."},
+    order:[{de:"1. Schadensreduktion",en:"1. Damage reduction"},{de:"2. Heilung/HP",en:"2. Healing/HP"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Top-Partner: Aethelflaed (Debuff+Heilung), Charles Martel. Robuster Struktur-Verteidiger.",
+      en:"S1 to 5 first. Top partner: Aethelflaed (debuff+heal), Charles Martel. Robust structure defender."}}
+  ,"boudica":{accent:"gold",zweig:{de:"\ud83c\udff9 BOGEN-ZWEIG",en:"\ud83c\udff9 ARCHER BRANCH"},
+    zsub:{de:"Bogen-DPS + Debuff, Barbaren & Feld",en:"Archer DPS + debuff, barbarians & field"},
+    build:{de:"Bogen / Friedenserhalt",en:"Archer / Peacekeeping"},modus:{de:"Vielseitig, F2P-stark",en:"Versatile, F2P-strong"},
+    quellen:"AllClash, RoK.hokbuild",
+    rows:[[{e:"\ud83c\udff9",p:"5/5",l:{de:"Bogen-Angriff",en:"Archer Attack"},st:"picked"}],
+      [{e:"\u26a1",p:"3/3",l:{de:"Fertigkeitsschaden",en:"Skill Damage"},st:"picked"},{e:"\ud83d\ude24",p:"3/3",l:{de:"Debuff",en:"Debuff"},st:"picked"}],
+      [{e:"\ud83d\udca5",p:"5/5",l:{de:"AoE-Schaden",en:"AoE Damage"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Bogen-Pfad mit Fertigkeitsschaden und Debuff \u2013 Boudica ist eine vielseitige F2P-Bogen-Kommandantin, gut f\u00fcr Barbaren, offenes Feld und Canyon.",
+      en:"Archer path with skill damage and debuff \u2013 Boudica is a versatile F2P archer, good for barbarians, open field and canyon."},
+    order:[{de:"1. Bogen-Angriff",en:"1. Archer attack"},{de:"2. Skill/Debuff",en:"2. Skill/debuff"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Top-Partner: Aethelflaed (Doppel-Debuff), Hermann.",en:"S1 to 5 first. Top partner: Aethelflaed (double debuff), Hermann."}}
+  ,"el_cid":{accent:"gold",zweig:{de:"\ud83c\udfc7 KAVALLERIE-ZWEIG",en:"\ud83c\udfc7 CAVALRY BRANCH"},
+    zsub:{de:"Kavallerie-Tank + Schweigen",en:"Cavalry tank + silence"},
+    build:{de:"Kavallerie",en:"Cavalry"},modus:{de:"Robuster Kavallerie-Prim\u00e4r",en:"Robust cavalry primary"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\ud83c\udfc7",p:"5/5",l:{de:"Kavallerie-Angriff",en:"Cavalry Attack"},st:"picked"}],
+      [{e:"\ud83d\udee1\ufe0f",p:"3/3",l:{de:"Verteidigung",en:"Defense"},st:"picked"},{e:"\ud83d\udd07",p:"3/3",l:{de:"Schweigen",en:"Silence"},st:"picked"}],
+      [{e:"\u2764\ufe0f",p:"5/5",l:{de:"Gesundheit",en:"Health"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Kavallerie-Pfad mit Verteidigung \u2013 El Cid tankt und buffert eigene Truppen, mit Schweigen-Effekt gegen Skill-Kommandanten. Robust und ausdauernd.",
+      en:"Cavalry path with defense \u2013 El Cid tanks and buffs own troops, with silence against skill commanders. Robust and durable."},
+    order:[{de:"1. Kavallerie-Angriff",en:"1. Cavalry attack"},{de:"2. Def/Schweigen",en:"2. Def/silence"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Top-Partner: Richard (Heilung), auch Hermann (Doppel-Schweigen).",en:"S1 to 5 first. Top partner: Richard (healing), also Hermann (double silence)."}}
+  ,"scipio":{accent:"gold",zweig:{de:"\u2694\ufe0f INFANTERIE-ZWEIG",en:"\u2694\ufe0f INFANTRY BRANCH"},
+    zsub:{de:"Infanterie-Schild + Schaden",en:"Infantry shield + damage"},
+    build:{de:"Infanterie",en:"Infantry"},modus:{de:"Robuster Infanterie-Allrounder",en:"Robust infantry all-rounder"},
+    quellen:"AllClash, RiseofKingdomsGuides",
+    rows:[[{e:"\u2694\ufe0f",p:"5/5",l:{de:"Infanterie-Angriff",en:"Infantry Attack"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"3/3",l:{de:"Schild-Effekt",en:"Shield Effect"},st:"picked"},{e:"\ud83d\udee1\ufe0f",p:"3/3",l:{de:"Verteidigung",en:"Defense"},st:"picked"}],
+      [{e:"\u2764\ufe0f",p:"5/5",l:{de:"Gesundheit",en:"Health"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Infanterie-Pfad mit Schild und Verteidigung \u2013 Scipio Africanus ist ein robuster Infanterie-Allrounder, gut als Tank-Front. Top-Infanterie offenes Feld mit Liu Che.",
+      en:"Infantry path with shield and defense \u2013 Scipio Africanus is a robust infantry all-rounder, good as tank front. Top infantry open field with Liu Che."},
+    order:[{de:"1. Infanterie-Angriff",en:"1. Infantry attack"},{de:"2. Schild/Def",en:"2. Shield/def"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Top-Partner: Liu Che (Scipio prim\u00e4r), auch Alexander der Gro\u00dfe.",en:"S1 to 5 first. Top partner: Liu Che (Scipio primary), also Alexander the Great."}}
+  ,"thutmosis":{accent:"gold",zweig:{de:"\ud83c\udff9 BOGEN-ZWEIG",en:"\ud83c\udff9 ARCHER BRANCH"},
+    zsub:{de:"Bogen-DPS, Rally & Feld",en:"Archer DPS, rally & field"},
+    build:{de:"Bogen",en:"Archer"},modus:{de:"Bogen-Prim\u00e4r/Rally",en:"Archer primary/rally"},
+    quellen:"RiseofKingdomsGuides (Muster Bogen-DPS)",
+    rows:[[{e:"\ud83c\udff9",p:"5/5",l:{de:"Bogen-Angriff",en:"Archer Attack"},st:"picked"}],
+      [{e:"\u26a1",p:"3/3",l:{de:"Fertigkeitsschaden",en:"Skill Damage"},st:"picked"},{e:"\ud83d\udca5",p:"3/3",l:{de:"Direktschaden",en:"Direct Damage"},st:"picked"}],
+      [{e:"\ud83c\udfaf",p:"5/5",l:{de:"Pr\u00e4zision",en:"Precision"},st:"picked"}],
+      [{e:"\ud83d\udd31",p:"1/1",l:{de:"Schl\u00fcsseltalent",en:"Key talent"},st:"picked",key:true}]],
+    pfad:{de:"Bogen-DPS-Pfad mit Fertigkeits- und Direktschaden \u2013 Thutmosis III. ist ein solider Bogen-Kommandant f\u00fcr Rally und offenes Feld.",
+      en:"Archer DPS path with skill and direct damage \u2013 Thutmose III is a solid archer commander for rally and open field."},
+    order:[{de:"1. Bogen-Angriff",en:"1. Archer attack"},{de:"2. Skill/Direkt",en:"2. Skill/direct"},{de:"3. Schl\u00fcssel",en:"3. Key"}],
+    skill:{de:"S1 zuerst auf 5. Gut als Bogen-Rally-Kommandant.",en:"S1 to 5 first. Good as archer rally commander."}}
+
+};
+
 var FORMATIONEN=[
   {id:"keil",name:{de:"Keilformation",en:"Wedge"},bonus:{de:"+5 % Skill-Schaden",en:"+5% skill damage"},farbe:"#dc2626",fuer:{de:"Skill-Schaden-Kommandanten (die meisten Angreifer)",en:"Skill damage commanders (most attackers)"}},
   {id:"bogen",name:{de:"Bogenformation",en:"Arch"},bonus:{de:"+5 % normaler Angriffsschaden",en:"+5% basic attack damage"},farbe:"#d97706",fuer:{de:"Kommandanten mit hohem Grundangriff",en:"High basic-attack commanders"}},
@@ -1007,6 +1233,85 @@ function renderPaarungen(){
 }
 
 
+function _t(o){if(!o)return "";return lang==="de"?o.de:o.en;}
+
+function renderTalentbaum(kid){
+  var de=lang==="de";
+  var tb=TALENTBAUM[kid]; if(!tb)return null;
+  var k=findKom(kid); if(!k)return null;
+  var goldAccent=tb.accent!=="blue";
+  var bg1=goldAccent?"#3a2f1a":"#2a3142", bg2=goldAccent?"#1f1a10":"#171b24";
+  var titleCol=goldAccent?"#f5d894":"#9ec5f5";
+  var subCol=goldAccent?"#bba968":"#7a93b8";
+  var lblCol=goldAccent?"#d8c9a0":"#c2d4ec";
+  var pickGrad=goldAccent?"linear-gradient(135deg,#f5b942,#e07800)":"linear-gradient(135deg,#6fa8e8,#2563c9)";
+  var pickBorder=goldAccent?"#ffd97a":"#a9cdf5";
+  var pickGlow=goldAccent?"#e0780099":"#2563c999";
+  var connActive=goldAccent?"#f5b942":"#6fa8e8";
+  var accentSolid=goldAccent?"#e07800":"#2563c9";
+  // Knotenreihen rendern
+  var rowsEls=[];
+  tb.rows.forEach(function(rowArr,ri){
+    var nodes=rowArr.map(function(nd,ni){
+      var isPick=nd.st==="picked", isKey=!!nd.key;
+      var dBg=isPick?pickGrad:(nd.st==="avail"?"#3d3424":"#2a2519");
+      var dBorder=isPick?pickBorder:(nd.st==="avail"?"#8a7a4a":"#4a4232");
+      var sz=isKey?40:34;
+      return _h("div",{key:ni,style:{width:58,position:"relative",display:"flex",flexDirection:"column",alignItems:"center",flexShrink:0}},
+        _h("div",{style:{width:sz,height:sz,transform:"rotate(45deg)",borderRadius:7,border:"2px solid "+dBorder,
+          background:dBg,display:"flex",alignItems:"center",justifyContent:"center",position:"relative",
+          boxShadow:isPick?"0 0 12px "+pickGlow:(isKey?"0 0 18px "+pickGlow:"none"),opacity:nd.st==="locked"?0.5:1}},
+          _h("span",{style:{transform:"rotate(-45deg)",fontSize:isKey?18:15}},nd.e),
+          nd.p?_h("div",{style:{position:"absolute",top:-21,left:"50%",transform:"translateX(-50%) rotate(-45deg)",
+            background:"#1C1C1E",color:"#fff",fontSize:8.5,fontWeight:800,padding:"0 4px",borderRadius:6,
+            border:"1px solid "+pickBorder,whiteSpace:"nowrap"}},nd.p):null
+        ),
+        _h("div",{style:{fontSize:8,color:lblCol,textAlign:"center",marginTop:5,lineHeight:1.15,maxWidth:62,
+          opacity:nd.st==="locked"?0.5:1,fontWeight:isKey?700:400}},de?nd.l.de:nd.l.en)
+      );
+    });
+    rowsEls.push(_h("div",{key:"r"+ri,style:{display:"flex",gap:8,justifyContent:"center",alignItems:"center"}},nodes));
+    if(ri<tb.rows.length-1)rowsEls.push(_h("div",{key:"c"+ri,style:{width:2,height:8,background:connActive,boxShadow:"0 0 4px "+accentSolid}}));
+  });
+  // Pfad-Reihenfolge-Pills
+  var orderEls=[];
+  tb.order.forEach(function(o,oi){
+    if(oi>0)orderEls.push(_h("span",{key:"a"+oi,style:{color:accentSolid,fontWeight:900}},"\u2192"));
+    orderEls.push(_h("span",{key:"o"+oi,style:{fontSize:11,fontWeight:700,padding:"3px 9px",borderRadius:8,background:"#fff",border:"1px solid "+L.border}},de?o.de:o.en));
+  });
+  return _h("div",{key:kid,style:{background:"#fff",border:"1px solid "+L.border,borderRadius:16,padding:18,marginBottom:16,boxShadow:L.sh}},
+    _h("div",{style:{fontSize:17,fontWeight:800,marginBottom:3,display:"flex",alignItems:"center",gap:8}},_h("span",null,k.s),_h("span",null,k.name)),
+    _h("div",{style:{fontSize:12,color:L.sub,marginBottom:4}},(de?"Empfohlener Build: ":"Recommended build: ")+_t(tb.build)+" \u2013 "+_t(tb.modus)),
+    _h("div",{style:{fontSize:10.5,color:"#9CA3AF",marginBottom:14,fontStyle:"italic"}},(de?"Quellen: ":"Sources: ")+tb.quellen),
+    _h("div",{style:{background:"linear-gradient(160deg,"+bg1+","+bg2+")",borderRadius:14,padding:"22px 16px",overflowX:"auto"}},
+      _h("div",{style:{color:titleCol,fontSize:12.5,fontWeight:800,textAlign:"center",marginBottom:4,letterSpacing:0.5}},_t(tb.zweig)),
+      _h("div",{style:{color:subCol,fontSize:10.5,textAlign:"center",marginBottom:16}},_t(tb.zsub)),
+      _h("div",{style:{display:"flex",flexDirection:"column",gap:8,alignItems:"center",minWidth:300}},rowsEls)
+    ),
+    _h("div",{style:{marginTop:14,padding:"12px 14px",borderRadius:9,fontSize:12.5,lineHeight:1.6,borderLeft:"3px solid "+accentSolid,background:accentSolid+"12"}},
+      _h("b",{style:{color:accentSolid}},de?"Empfohlener Pfad: ":"Recommended path: "),_t(tb.pfad),
+      _h("div",{style:{display:"flex",gap:8,marginTop:10,alignItems:"center",flexWrap:"wrap"}},orderEls)
+    ),
+    _h("div",{style:{marginTop:12,padding:"11px 13px",background:"#b4520912",borderLeft:"3px solid #b45309",borderRadius:9,fontSize:11.5,lineHeight:1.55}},_t(tb.skill))
+  );
+}
+function renderTalente(){
+  var de=lang==="de";
+  var intro=_h("div",{style:{background:"#fff7ed",border:"1px solid "+L.gold+"44",borderRadius:14,padding:"11px 14px",marginBottom:14,display:"flex",gap:10}},
+    _h("span",{style:{fontSize:18}},"\ud83c\udf33"),
+    _h("div",null,
+      _h("div",{style:{fontSize:14,fontWeight:800,color:L.gold}},de?"Talentb\u00e4ume \u2013 recherchierte Meta-Builds":"Talent trees \u2013 researched meta builds"),
+      _h("div",{style:{fontSize:12,color:L.sub,marginTop:2}},de?"Optimaler Punkte-Pfad je Schl\u00fcssel-Kommandant. Gold = empfohlen setzen, matt = danach, der Schl\u00fcssel-Knoten ist hervorgehoben.":"Optimal point path per key commander. Gold = recommended, matte = afterwards, the key node is highlighted.")));
+  var order=["arthur","achilleus","huo_qubing","minamoto","el_cid","liu_che","gorgo","sun_tzu","william","scipio","leonidas","p_hermann","boudica","thutmosis","aethelflaed","richard","joan"];
+  var trees=order.map(function(kid){return z.besitz[kid]?renderTalentbaum(kid):null;}).filter(Boolean);
+  var fehlt=order.filter(function(kid){return !z.besitz[kid];}).map(function(kid){var k=findKom(kid);return k?k.name:kid;});
+  var hint=fehlt.length?_h("div",{style:{fontSize:11,color:L.mute,fontStyle:"italic",marginTop:8}},
+    (de?"Weitere B\u00e4ume erscheinen, sobald im Besitz: ":"More trees appear once owned: ")+fehlt.join(", ")):null;
+  var more=_h("div",{style:{fontSize:11,color:L.sub,marginTop:14,padding:"10px 13px",background:L.inner,borderRadius:9,lineHeight:1.5}},
+    de?"Weitere Kommandanten-B\u00e4ume k\u00f6nnen auf Anfrage recherchiert und erg\u00e4nzt werden.":"More commander trees can be researched and added on request.");
+  return _h("div",null,intro,_h("div",null,trees),hint,more);
+}
+
 function renderFormationen(){
   var de=lang==="de";
   // Einsteiger-Erklaerblock
@@ -1091,7 +1396,7 @@ function renderWoche(){
         })));
     }catch(e){return _h("div",null,"Fehler / Error");}
   }
-  var content=z.tab==="kommandanten"?renderKomm():z.tab==="strategie"?renderStrat():z.tab==="truppentypen"?renderTrup():z.tab==="wochenplan"?renderWoche():z.tab==="paarungen"?renderPaarungen():z.tab==="glossar"?renderGloss():z.tab==="faehigkeiten"?renderGlosX("sk"):z.tab==="talente"?renderGlosX("ta"):z.tab==="formationen"?renderFormationen():renderGlosX("fo");
+  var content=z.tab==="kommandanten"?renderKomm():z.tab==="strategie"?renderStrat():z.tab==="truppentypen"?renderTrup():z.tab==="wochenplan"?renderWoche():z.tab==="paarungen"?renderPaarungen():z.tab==="glossar"?renderGloss():z.tab==="faehigkeiten"?renderGlosX("sk"):z.tab==="talente"?renderTalente():z.tab==="formationen"?renderFormationen():renderGlosX("fo");
 
   return _h("div",{style:{minHeight:"100vh",background:L.bg,color:L.text,paddingBottom:60}},
     showEI&&_h(EIModal,{z:z,gE:gE,gG:gG,gB:gB,eb:eB,lang:lang,onImport:doImport,onClose:function(){setShowEI(false);}}),
